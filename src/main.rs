@@ -1,7 +1,7 @@
 use std::rc::Rc;
 
 use tcod::colors::*;
-use tcod::console::{FontLayout, Renderer, Root};
+use tcod::console::{Console, FontLayout, Renderer, Root};
 
 pub mod game;
 use game::Game;
@@ -31,13 +31,15 @@ pub const PLAYER_TILE: Tile = Tile {
 };
 
 fn main() {
-    let root = Root::initializer()
+    let mut root = Root::initializer()
         .renderer(Renderer::SDL)
         .font("curses_vector_16x24.png", FontLayout::AsciiInRow)
         .size(SCREEN_WIDTH, SCREEN_HEIGHT)
         .title("Wheatley")
         .fullscreen(false)
         .init();
+
+    root.set_default_foreground(WHITE);
 
     tcod::system::set_fps(LIMIT_FPS);
 

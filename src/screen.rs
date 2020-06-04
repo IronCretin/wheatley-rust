@@ -1,6 +1,5 @@
 use std::rc::Rc;
 
-use tcod::colors::WHITE;
 use tcod::console::{Console, Root};
 use tcod::input::{Key, KeyCode};
 
@@ -27,7 +26,9 @@ impl ScreenStack {
         self.screens.push(game.menu.clone());
         while !self.display.window_closed() && !self.screens.is_empty() {
             self.render(&game);
+
             let key = self.display.wait_for_keypress(true);
+
             let screen = self.screens.last_mut().unwrap();
             let act = screen.handle(game, key);
             match act {
@@ -50,8 +51,8 @@ impl ScreenStack {
         }
     }
     fn render(&mut self, game: &Game) {
-        self.display.set_default_foreground(WHITE);
         self.display.clear();
+
         let mut bottom = 0;
         for (i, s) in self.screens.iter().enumerate() {
             if !s.transparent() {
