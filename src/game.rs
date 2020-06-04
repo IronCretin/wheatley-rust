@@ -22,10 +22,10 @@ impl Game {
             help,
             player: Player {
                 tile: PLAYER_TILE,
-                pos: Point(0, 0),
+                pos: Point(1, 1),
             },
             level: 0,
-            floors: vec![Level::generate(10, 10, Empty)],
+            floors: vec![Level::generate(100, 100, Empty)],
             basement: vec![],
         }
     }

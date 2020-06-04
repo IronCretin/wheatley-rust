@@ -24,8 +24,8 @@ pub const WALL: MapTile = MapTile {
         fg: WHITE,
         bg: BLACK,
     },
-    transparent: true,
-    walkable: true,
+    transparent: false,
+    walkable: false,
 };
 pub const FLOOR: MapTile = MapTile {
     tile: Tile {

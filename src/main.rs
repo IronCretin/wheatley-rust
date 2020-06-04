@@ -1,7 +1,7 @@
 use std::rc::Rc;
 
 use tcod::colors::*;
-use tcod::console::{FontLayout, Root};
+use tcod::console::{FontLayout, Renderer, Root};
 
 pub mod game;
 use game::Game;
@@ -22,7 +22,7 @@ use tile::Tile;
 const SCREEN_WIDTH: i32 = 100;
 const SCREEN_HEIGHT: i32 = 45;
 
-const LIMIT_FPS: i32 = 20;
+const LIMIT_FPS: i32 = 30;
 
 pub const PLAYER_TILE: Tile = Tile {
     ch: '@',
@@ -32,11 +32,13 @@ pub const PLAYER_TILE: Tile = Tile {
 
 fn main() {
     let root = Root::initializer()
+        .renderer(Renderer::SDL)
         .font("curses_vector_16x24.png", FontLayout::AsciiInRow)
         .size(SCREEN_WIDTH, SCREEN_HEIGHT)
         .title("Wheatley")
         .fullscreen(false)
         .init();
+
     tcod::system::set_fps(LIMIT_FPS);
 
     let help = Rc::new(TextBox::new(
