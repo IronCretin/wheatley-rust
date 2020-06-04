@@ -45,13 +45,20 @@ fn main() {
 
     let help = Rc::new(TextBox::new(
         Some(String::from("Help")),
-        String::from(r#"? - Show help screen"#),
-        30,
+        String::from(
+r#"? - Show help screen
+Arrow keys: move around
+You can also use numpad or vi-keys:
+  7 8 9    y k u
+  4 @ 6    h @ l
+  1 2 3    b j n"#),
+        50,
         30,
         true,
     ));
 
-    let mut game = Game::new(Rc::new(MenuScreen::new(String::from(r#"+-------------------------------------------------------------------------+
+    let mut game = Game::new(Rc::new(MenuScreen::new(String::from(
+r#"+-------------------------------------------------------------------------+
 |           __          ___                _   _                          |
 |           \ \        / / |              | | | |                         |
 |            \ \  /\  / /| |__   ___  __ _| |_| | ___ _   _               |
