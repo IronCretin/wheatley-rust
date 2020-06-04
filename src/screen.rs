@@ -1,3 +1,6 @@
+use std::rc::Rc;
+
+
 use tcod::console::{ Root, Console };
 use tcod::input::{ Key, KeyCode };
 use tcod::colors::WHITE;
@@ -5,10 +8,11 @@ use tcod::colors::WHITE;
 use crate::game::Game;
 
 pub mod menu;
+pub mod textbox;
 
 pub struct ScreenStack {
     display: Root,
-    screens: Vec<Box<dyn Screen>>
+    screens: Vec<Rc<dyn Screen>>
 }
 
 impl ScreenStack {
@@ -18,16 +22,20 @@ impl ScreenStack {
             screens: Vec::new()
         }
     }
-    pub fn play(mut self, game: &mut Game, mut screen: Box<dyn Screen>) {
+    pub fn play(mut self, game: &mut Game, screen: Box<dyn Screen>) {
         screen.enter(game);
-        self.screens.push(screen);
+        self.screens.push(Rc::from(screen));
         while !self.display.window_closed() && !self.screens.is_empty() {
             self.render(&game);
             let key = self.display.wait_for_keypress(true);
-            match self.screens.last_mut().unwrap().handle(game, key) {
+            let act = self.screens
+                        .last_mut()
+                        .unwrap()
+                        .handle(game, key);
+            match act {
                 Action::Keep => {}
                 Action::Push(s) => {
-                    self.screens.push(s);
+                    self.screens.push(s.clone());
                 }
                 Action::Pop => {
                     self.screens.pop();
@@ -51,18 +59,18 @@ impl ScreenStack {
     }
 }
 
+#[derive(Clone)]
 pub enum Action {
     Keep,
     Pop,
-    Push(Box<dyn Screen>),
-    // Replace(Box<dyn Screen>),
+    Push(Rc<dyn Screen>),
 }
 
 pub trait Screen {
-    fn enter(&mut self, _game: &mut Game) { }
-    fn exit(&mut self, _game: &mut Game) { }
+    fn enter(&self, _game: &mut Game) { }
+    fn exit(&self, _game: &mut Game) { }
     fn render(&self, game: &Game, display: &mut Root);
-    fn handle(&mut self, _game: &mut Game, key: Key) -> Action {
+    fn handle(&self, _game: &mut Game, key: Key) -> Action {
         match key {
             Key { code: KeyCode::Escape, .. } => {
                 Action::Pop

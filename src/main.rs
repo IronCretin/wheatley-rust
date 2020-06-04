@@ -3,7 +3,7 @@ use tcod::console::{ Root, FontLayout };
 pub mod game;
 pub mod screen;
 use game::Game;
-use screen::ScreenStack;
+use screen::{ ScreenStack, Action };
 use screen::menu::MenuScreen;
 
 const SCREEN_WIDTH: i32 = 100;
@@ -43,10 +43,10 @@ fn main() {
 +-------------------------------------------------------------------------+
         "#),
         vec![
-            String::from("Play!"),
-            String::from("Help"),
-            String::from("Credits"),
-            String::from("Quit"),
+            (String::from("Play!"), Action::Keep),
+            (String::from("Help"), Action::Keep),
+            (String::from("Credits"), Action::Keep),
+            (String::from("Quit"), Action::Pop),
         ]
     )));
 }

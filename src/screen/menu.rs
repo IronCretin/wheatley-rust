@@ -1,4 +1,6 @@
 use std::cmp::max;
+use std::cell::Cell;
+
 
 use tcod::console::{ Root, Console, TextAlignment, BackgroundFlag };
 use tcod::colors;
@@ -11,22 +13,22 @@ use crate::game::Game;
 
 pub struct MenuScreen {
     title: String,
-    options: Vec<String>,
-    active: usize,
+    options: Vec<(String, Action)>,
+    active: Cell<usize>,
     hline: i32
 }
 impl MenuScreen {
-    pub fn new(title: String, options: Vec<String>) -> MenuScreen {
+    pub fn new(title: String, options: Vec<(String, Action)>) -> MenuScreen {
         let mut maxl = 0;
-        for o in &options {
-            let l = o.len();
+        for (opt, _) in &options {
+            let l = opt.len();
             if l > maxl {
                 maxl = l;
             }
         }
         let s = MenuScreen {
             title, options,
-            active: 0,
+            active: Cell::new(0),
             hline: maxl as i32 + 4
         };
         return s;
@@ -46,8 +48,8 @@ impl Screen for MenuScreen {
             y += 1;
         }
         y += 1;
-        for (i, opt) in self.options.iter().enumerate() {
-            if i == self.active {
+        for (i, (opt, _)) in self.options.iter().enumerate() {
+            if i == self.active.get() {
                 display.horizontal_line(x-self.hline/2, y, self.hline, BackgroundFlag::None);
                 display.print_ex(x, y,
                     BackgroundFlag::None,
@@ -64,17 +66,21 @@ impl Screen for MenuScreen {
             y += 1
         }
     }
-    fn handle(&mut self, _game: &mut Game, key: Key) -> Action {
+    fn handle(&self, _game: &mut Game, key: Key) -> Action {
         match key {
             Key { code: KeyCode::Down, .. } => {
-                self.active = (self.active + 1) % self.options.len()
+                self.active.set((self.active.get() + 1) % self.options.len())
             }
             Key { code: KeyCode::Up, .. } => {
-                if self.active == 0 {
-                    self.active = self.options.len() - 1;
+                let active = self.active.get();
+                if active == 0 {
+                    self.active.set(self.options.len() - 1);
                 } else {
-                    self.active -= 1
+                    self.active.set(active - 1)
                 }
+            }
+            Key {code: KeyCode::Enter, .. } => {
+                return self.options[self.active.get()].1.clone()
             }
             Key { code: KeyCode::Escape, .. } => {
                 return Action::Pop
