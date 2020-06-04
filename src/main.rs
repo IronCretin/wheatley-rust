@@ -7,6 +7,7 @@ pub mod game;
 use game::Game;
 
 pub mod screen;
+use screen::game::GameScreen;
 use screen::menu::MenuScreen;
 use screen::textbox::TextBox;
 use screen::{Action, ScreenStack};
@@ -25,7 +26,7 @@ const LIMIT_FPS: i32 = 20;
 
 pub const PLAYER_TILE: Tile = Tile {
     ch: '@',
-    fg: GREEN,
+    fg: DARK_GREEN,
     bg: BLACK,
 };
 
@@ -37,6 +38,14 @@ fn main() {
         .fullscreen(false)
         .init();
     tcod::system::set_fps(LIMIT_FPS);
+
+    let help = Rc::new(TextBox::new(
+        Some(String::from("Help")),
+        String::from(r#"? - Show help screen"#),
+        30,
+        30,
+        true,
+    ));
 
     let mut game = Game::new(Rc::new(MenuScreen::new(String::from(r#"+-------------------------------------------------------------------------+
 |           __          ___                _   _                          |
@@ -55,20 +64,16 @@ fn main() {
 | |_____/|_|_| |_| |_|\__,_|_|\__,_|\__\___/|_|    |____|\___/____|\___/  |
 +-------------------------------------------------------------------------+"#),
         vec![
-            (String::from("Play!"), Action::Keep),
-            (String::from("Help"), Action::Help),
+            (String::from("Play!"), Action::Push(Rc::new(GameScreen))),
+            (String::from("Help"), Action::Push(help.clone())),
             (String::from("Credits"), Action::Push(Rc::new(TextBox::new(
                 Some(String::from("Credits")),
-                String::from("Game by Paul Maynard\nFlavor text contributed by Joyce Quach\ncurses_vector tileset by DragonDePlatino"),
+                String::from("Game by Paul Maynard\nFlavor text contributed by:\n - Joyce Quach\ncurses_vector tileset by DragonDePlatino"),
                 50, 20, true
             )))),
             (String::from("Quit"), Action::Pop),
         ]
-    )), Rc::new(TextBox::new(
-        Some(String::from("Help")),
-        String::from(r#"? - Show help screen"#),
-        30, 30, true
-    )));
+    )),help);
 
     let screens = ScreenStack::new(root);
     screens.play(&mut game);

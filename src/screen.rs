@@ -6,6 +6,7 @@ use tcod::input::{Key, KeyCode};
 
 use crate::game::Game;
 
+pub mod game;
 pub mod menu;
 pub mod textbox;
 
@@ -45,7 +46,6 @@ impl ScreenStack {
                     self.screens.last().unwrap().exit(game);
                     self.screens.pop();
                 }
-                Action::Help => self.screens.push(game.help.clone()),
             }
         }
     }
@@ -71,28 +71,31 @@ pub enum Action {
     Pop,
     Push(Rc<dyn Screen>),
     Replace(Rc<dyn Screen>),
-    Help,
 }
 
 pub trait Screen {
     fn enter(&self, _game: &Game) {}
     fn exit(&self, _game: &Game) {}
     fn render(&self, game: &Game, display: &mut Root);
-    fn handle(&self, _game: &mut Game, key: Key) -> Action {
-        use Action::*;
-        use KeyCode::*;
-        match key {
-            Key { code: Escape, .. } => Pop,
-            Key {
-                code: Char,
-                shift: true,
-                printable: '/',
-                ..
-            } => Help,
-            _ => Keep,
-        }
+    fn handle(&self, game: &mut Game, key: Key) -> Action {
+        handle_default(game, key)
     }
     fn transparent(&self) -> bool {
         false
+    }
+}
+
+pub fn handle_default(game: &Game, key: Key) -> Action {
+    use Action::*;
+    use KeyCode::*;
+    match key {
+        Key { code: Escape, .. } => Pop,
+        Key {
+            code: Char,
+            shift: true,
+            printable: '/',
+            ..
+        } => Push(game.help.clone()),
+        _ => Keep,
     }
 }

@@ -2,8 +2,9 @@ use ndarray::{Array, Array2};
 use tcod::map::Map;
 
 pub mod gen;
-
 pub mod tile;
+
+use gen::Generator;
 use tile::{MapTile, DEFAULT_TILE};
 
 pub struct Level {
@@ -15,6 +16,11 @@ pub struct Level {
 }
 
 impl Level {
+    pub fn generate<T: Generator>(width: i32, height: i32, gen: T) -> Level {
+        let mut l = Level::new(width, height);
+        gen.generate(&mut l);
+        l
+    }
     fn new(width: i32, height: i32) -> Level {
         let tile = DEFAULT_TILE;
         let mut map = Map::new(width, height);
@@ -27,10 +33,10 @@ impl Level {
             seen: Array::from_elem((width as usize, height as usize), false),
         }
     }
-    fn get(&self, x: i32, y: i32) -> &MapTile {
+    pub fn get(&self, x: i32, y: i32) -> &MapTile {
         return &self.tiles[[x as usize, y as usize]];
     }
-    fn set(&mut self, x: i32, y: i32, t: MapTile) {
+    pub fn set(&mut self, x: i32, y: i32, t: MapTile) {
         self.map.set(x, y, t.transparent, t.walkable);
         self.tiles[[x as usize, y as usize]] = t;
     }

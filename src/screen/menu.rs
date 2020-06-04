@@ -6,7 +6,7 @@ use tcod::console::{BackgroundFlag, Console, Root, TextAlignment};
 use tcod::input::{Key, KeyCode};
 
 use crate::game::Game;
-use crate::screen::{Action, Screen};
+use crate::screen::{handle_default, Action, Screen};
 
 pub struct MenuScreen {
     title: String,
@@ -72,7 +72,7 @@ impl Screen for MenuScreen {
             y += 1
         }
     }
-    fn handle(&self, _game: &mut Game, key: Key) -> Action {
+    fn handle(&self, game: &mut Game, key: Key) -> Action {
         match key {
             Key {
                 code: KeyCode::Down,
@@ -98,7 +98,7 @@ impl Screen for MenuScreen {
                 code: KeyCode::Escape,
                 ..
             } => return Action::Pop,
-            _ => {}
+            _ => return handle_default(game, key),
         }
         Action::Keep
     }
