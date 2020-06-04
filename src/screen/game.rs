@@ -25,10 +25,22 @@ impl Screen for GameScreen {
         use super::KeyCode::*;
         let mut pos = game.player.pos;
         match key {
-            Key { code: Up, .. } => pos += Point(0, -1),
-            Key { code: Down, .. } => pos += Point(0, 1),
-            Key { code: Left, .. } => pos += Point(-1, 0),
-            Key { code: Right, .. } => pos += Point(1, 0),
+            Key { printable: 'y', .. } | Key { code: NumPad7, .. } => pos += Point(-1, -1),
+            Key { printable: 'k', .. } | Key { code: NumPad8, .. } | Key { code: Up, .. } => {
+                pos += Point(0, -1)
+            }
+            Key { printable: 'u', .. } | Key { code: NumPad9, .. } => pos += Point(1, -1),
+            Key { printable: 'h', .. } | Key { code: NumPad4, .. } | Key { code: Left, .. } => {
+                pos += Point(-1, 0)
+            }
+            Key { printable: 'l', .. } | Key { code: NumPad6, .. } | Key { code: Right, .. } => {
+                pos += Point(1, 0)
+            }
+            Key { printable: 'b', .. } | Key { code: NumPad1, .. } => pos += Point(-1, 1),
+            Key { printable: 'j', .. } | Key { code: NumPad2, .. } | Key { code: Down, .. } => {
+                pos += Point(0, 1)
+            }
+            Key { printable: 'n', .. } | Key { code: NumPad3, .. } => pos += Point(1, 1),
             _ => return handle_default(game, key),
         }
         let l = game.cur_level();
