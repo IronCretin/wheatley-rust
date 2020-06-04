@@ -1,5 +1,6 @@
 use ndarray::{Array, Array2};
 use tcod::map::Map;
+use tcod::random::Rng;
 
 pub mod gen;
 pub mod tile;
@@ -16,9 +17,9 @@ pub struct Level {
 }
 
 impl Level {
-    pub fn generate<T: Generator>(width: i32, height: i32, gen: T) -> Level {
+    pub fn generate<T: Generator>(width: i32, height: i32, rng: &mut Rng, gen: T) -> Level {
         let mut l = Level::new(width, height);
-        gen.generate(&mut l);
+        gen.generate(rng, &mut l);
         l
     }
     fn new(width: i32, height: i32) -> Level {

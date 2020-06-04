@@ -1,6 +1,8 @@
 use std::rc::Rc;
 
-use crate::map::{gen::Empty, Level};
+use tcod::random::Rng;
+
+use crate::map::{gen::Percent, Level};
 use crate::player::Player;
 use crate::point::Point;
 use crate::screen::Screen;
@@ -13,11 +15,12 @@ pub struct Game {
     pub level: i32,
     floors: Vec<Level>,
     basement: Vec<Level>,
+    pub map_rng: Rng,
 }
 
 impl Game {
     pub fn new(menu: Rc<dyn Screen>, help: Rc<dyn Screen>) -> Game {
-        Game {
+        let mut g = Game {
             menu,
             help,
             player: Player {
@@ -25,9 +28,13 @@ impl Game {
                 pos: Point(1, 1),
             },
             level: 0,
-            floors: vec![Level::generate(100, 100, Empty)],
-            basement: vec![],
-        }
+            floors: Vec::new(),
+            basement: Vec::new(),
+            map_rng: Rng::get_instance(),
+        };
+        g.floors
+            .push(Level::generate(100, 100, &mut g.map_rng, Percent(0.3)));
+        g
     }
     pub fn cur_level(&self) -> &Level {
         if self.level < 0 {
