@@ -11,7 +11,7 @@ use tile::{MapTile, DEFAULT_TILE};
 pub struct Level {
     pub width: i32,
     pub height: i32,
-    map: Map,
+    pub map: Map,
     tiles: Array2<MapTile>,
     pub seen: Array2<bool>,
 }

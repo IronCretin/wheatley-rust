@@ -29,7 +29,7 @@ impl TextBox {
 }
 
 impl Screen for TextBox {
-    fn render(&self, _game: &Game, display: &mut Root) {
+    fn render(&self, _game: &mut Game, display: &mut Root) {
         let x = (display.width() - self.width) / 2;
         let y = (display.height() - self.height) / 2;
         if self.frame {

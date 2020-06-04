@@ -34,7 +34,7 @@ impl MenuScreen {
 }
 
 impl Screen for MenuScreen {
-    fn render(&self, _game: &Game, display: &mut Root) {
+    fn render(&self, _game: &mut Game, display: &mut Root) {
         let x = display.width() / 2;
         let mut y = max(
             0,

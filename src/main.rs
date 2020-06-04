@@ -29,8 +29,11 @@ pub const PLAYER_TILE: Tile = Tile {
     fg: DARK_GREEN,
     bg: BLACK,
 };
+pub const PLAYER_FOV: i32 = 10;
 
 fn main() {
+    println!("{:?}", tcod::chars::HLINE);
+
     let mut root = Root::initializer()
         .renderer(Renderer::SDL)
         .font("curses_vector_16x24.png", FontLayout::AsciiInRow)
@@ -38,7 +41,6 @@ fn main() {
         .title("Wheatley")
         .fullscreen(false)
         .init();
-
     root.set_default_foreground(WHITE);
 
     tcod::system::set_fps(LIMIT_FPS);
@@ -46,12 +48,13 @@ fn main() {
     let help = Rc::new(TextBox::new(
         Some(String::from("Help")),
         String::from(
-r#"? - Show help screen
+            r#"? - Show help screen
 Arrow keys: move around
 You can also use numpad or vi-keys:
   7 8 9    y k u
   4 @ 6    h @ l
-  1 2 3    b j n"#),
+  1 2 3    b j n"#,
+        ),
         50,
         30,
         true,

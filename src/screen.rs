@@ -22,10 +22,10 @@ impl ScreenStack {
         }
     }
     pub fn play(mut self, game: &mut Game) {
-        game.menu.enter(game);
+        game.menu.clone().enter(game);
         self.screens.push(game.menu.clone());
         while !self.display.window_closed() && !self.screens.is_empty() {
-            self.render(&game);
+            self.render(game);
 
             let key = self.display.wait_for_keypress(true);
 
@@ -50,7 +50,7 @@ impl ScreenStack {
             }
         }
     }
-    fn render(&mut self, game: &Game) {
+    fn render(&mut self, game: &mut Game) {
         self.display.clear();
 
         let mut bottom = 0;
@@ -75,9 +75,9 @@ pub enum Action {
 }
 
 pub trait Screen {
-    fn enter(&self, _game: &Game) {}
-    fn exit(&self, _game: &Game) {}
-    fn render(&self, game: &Game, display: &mut Root);
+    fn enter(&self, _game: &mut Game) {}
+    fn exit(&self, _game: &mut Game) {}
+    fn render(&self, game: &mut Game, display: &mut Root);
     fn handle(&self, game: &mut Game, key: Key) -> Action {
         handle_default(game, key)
     }

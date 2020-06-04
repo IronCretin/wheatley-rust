@@ -30,7 +30,7 @@ pub const WALL: MapTile = MapTile {
 pub const FLOOR: MapTile = MapTile {
     tile: Tile {
         ch: '.',
-        fg: GREY,
+        fg: LIGHT_GREY,
         bg: BLACK,
     },
     transparent: true,

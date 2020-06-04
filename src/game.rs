@@ -33,7 +33,7 @@ impl Game {
             map_rng: Rng::get_instance(),
         };
         g.floors
-            .push(Level::generate(100, 100, &mut g.map_rng, Percent(0.3)));
+            .push(Level::generate(100, 100, &mut g.map_rng, Percent(0.2)));
         g
     }
     pub fn cur_level(&self) -> &Level {

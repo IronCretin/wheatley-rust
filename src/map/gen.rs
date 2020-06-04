@@ -3,6 +3,8 @@ use tcod::random::Rng;
 use super::tile::WALL;
 use crate::map::Level;
 
+pub mod hallways;
+
 pub trait Generator {
     fn generate(&self, rng: &mut Rng, level: &mut Level);
 }

@@ -1,21 +1,30 @@
+use tcod::colors::*;
 use tcod::console::{Console, Root};
 use tcod::input::Key;
+use tcod::map::FovAlgorithm::Basic;
 
 use super::{handle_default, Action, Screen};
 use crate::game::Game;
 use crate::point::Point;
+use crate::PLAYER_FOV;
 
 pub struct GameScreen;
 
 impl Screen for GameScreen {
-    fn render(&self, game: &Game, display: &mut Root) {
-        let level = game.cur_level();
-        let offset = game.player.pos - Point(display.width(), display.height()) / 2;
+    fn render(&self, game: &mut Game, display: &mut Root) {
+        let pos = game.player.pos;
+        let level = game.cur_level_mut();
+        let offset = pos - Point(display.width(), display.height()) / 2;
         for x in 0..display.width() {
             for y in 0..display.height() {
                 let p = Point(x, y) + offset;
                 if 0 <= p.0 && p.0 < level.width && 0 <= p.1 && p.1 < level.height {
-                    level.get(p.0, p.1).draw(Point(x, y), display);
+                    if level.map.is_in_fov(p.0, p.1) {
+                        level.seen[[p.0 as usize, p.1 as usize]] = true;
+                        level.get(p.0, p.1).draw(Point(x, y), display);
+                    } else if level.seen[[p.0 as usize, p.1 as usize]] {
+                        display.put_char_ex(x, y, level.get(p.0, p.1).ch, DARK_GREY, BLACK);
+                    }
                 }
             }
         }
@@ -51,7 +60,16 @@ impl Screen for GameScreen {
             && l.get(pos.0, pos.1).walkable
         {
             game.player.pos = pos;
+            game.cur_level_mut()
+                .map
+                .compute_fov(pos.0, pos.1, PLAYER_FOV, true, Basic);
         }
         Action::Keep
+    }
+    fn enter(&self, game: &mut Game) {
+        let pos = game.player.pos;
+        game.cur_level_mut()
+            .map
+            .compute_fov(pos.0, pos.1, PLAYER_FOV, true, Basic);
     }
 }
