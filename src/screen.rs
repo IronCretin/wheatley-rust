@@ -22,23 +22,24 @@ impl ScreenStack {
             screens: Vec::new()
         }
     }
-    pub fn play(mut self, game: &mut Game, screen: Box<dyn Screen>) {
-        screen.enter(game);
-        self.screens.push(Rc::from(screen));
+    pub fn play(mut self, game: &mut Game) {
+        game.menu.enter(game);
+        self.screens.push(game.menu.clone());
         while !self.display.window_closed() && !self.screens.is_empty() {
             self.render(&game);
             let key = self.display.wait_for_keypress(true);
-            let act = self.screens
-                        .last_mut()
-                        .unwrap()
-                        .handle(game, key);
+            let screen = self.screens.last_mut().unwrap();
+            let act = screen.handle(game, key);
             match act {
                 Action::Keep => {}
                 Action::Push(s) => {
                     self.screens.push(s.clone());
                 }
                 Action::Pop => {
-                    self.screens.pop();
+                    self.screens.pop().unwrap().exit(game);
+                }
+                Action::Help => {
+                    self.screens.push(game.help.clone())
                 }
             }
         }
@@ -64,19 +65,25 @@ pub enum Action {
     Keep,
     Pop,
     Push(Rc<dyn Screen>),
+    Help,
 }
 
 pub trait Screen {
-    fn enter(&self, _game: &mut Game) { }
-    fn exit(&self, _game: &mut Game) { }
+    fn enter(&self, _game: &Game) { }
+    fn exit(&self, _game: &Game) { }
     fn render(&self, game: &Game, display: &mut Root);
     fn handle(&self, _game: &mut Game, key: Key) -> Action {
+        use KeyCode::*;
+        use Action::*;
         match key {
-            Key { code: KeyCode::Escape, .. } => {
-                Action::Pop
+            Key { code: Escape, .. } => {
+                Pop
+            }
+            Key { code: Char, shift: true, printable: '/', .. } => {
+                Help
             }
             _ => {
-                Action::Keep
+                Keep
             }
         }
     }
