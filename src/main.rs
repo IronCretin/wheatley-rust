@@ -1,19 +1,20 @@
 use std::rc::Rc;
 
-use tcod::console::{ Root, FontLayout };
+use tcod::console::{FontLayout, Root};
 
 pub mod game;
-pub mod screen;
 use game::Game;
-use screen::{ ScreenStack, Action };
+
+pub mod screen;
 use screen::menu::MenuScreen;
 use screen::textbox::TextBox;
+use screen::{Action, ScreenStack};
+
 
 const SCREEN_WIDTH: i32 = 100;
 const SCREEN_HEIGHT: i32 = 45;
 
 const LIMIT_FPS: i32 = 20;
-
 
 fn main() {
     let root = Root::initializer()

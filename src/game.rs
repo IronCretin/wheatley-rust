@@ -4,7 +4,7 @@ use crate::screen::Screen;
 
 pub struct Game {
     pub menu: Rc<dyn Screen>,
-    pub help: Rc<dyn Screen>
+    pub help: Rc<dyn Screen>,
 }
 
 impl Game {

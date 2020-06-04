@@ -1,9 +1,8 @@
 use std::rc::Rc;
 
-
-use tcod::console::{ Root, Console };
-use tcod::input::{ Key, KeyCode };
 use tcod::colors::WHITE;
+use tcod::console::{Console, Root};
+use tcod::input::{Key, KeyCode};
 
 use crate::game::Game;
 
@@ -12,14 +11,14 @@ pub mod textbox;
 
 pub struct ScreenStack {
     display: Root,
-    screens: Vec<Rc<dyn Screen>>
+    screens: Vec<Rc<dyn Screen>>,
 }
 
 impl ScreenStack {
     pub fn new(display: Root) -> ScreenStack {
         ScreenStack {
             display,
-            screens: Vec::new()
+            screens: Vec::new(),
         }
     }
     pub fn play(mut self, game: &mut Game) {
@@ -38,9 +37,7 @@ impl ScreenStack {
                 Action::Pop => {
                     self.screens.pop().unwrap().exit(game);
                 }
-                Action::Help => {
-                    self.screens.push(game.help.clone())
-                }
+                Action::Help => self.screens.push(game.help.clone()),
             }
         }
     }
@@ -69,23 +66,24 @@ pub enum Action {
 }
 
 pub trait Screen {
-    fn enter(&self, _game: &Game) { }
-    fn exit(&self, _game: &Game) { }
+    fn enter(&self, _game: &Game) {}
+    fn exit(&self, _game: &Game) {}
     fn render(&self, game: &Game, display: &mut Root);
     fn handle(&self, _game: &mut Game, key: Key) -> Action {
-        use KeyCode::*;
         use Action::*;
+        use KeyCode::*;
         match key {
-            Key { code: Escape, .. } => {
-                Pop
-            }
-            Key { code: Char, shift: true, printable: '/', .. } => {
-                Help
-            }
-            _ => {
-                Keep
-            }
+            Key { code: Escape, .. } => Pop,
+            Key {
+                code: Char,
+                shift: true,
+                printable: '/',
+                ..
+            } => Help,
+            _ => Keep,
         }
     }
-    fn transparent(&self) -> bool { false }
+    fn transparent(&self) -> bool {
+        false
+    }
 }
