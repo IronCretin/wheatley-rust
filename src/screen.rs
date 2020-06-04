@@ -33,9 +33,17 @@ impl ScreenStack {
                 Action::Keep => {}
                 Action::Push(s) => {
                     self.screens.push(s.clone());
+                    s.enter(game)
+                }
+                Action::Replace(s) => {
+                    self.screens.last().unwrap().exit(game);
+                    self.screens.pop();
+                    self.screens.push(s.clone());
+                    s.enter(game);
                 }
                 Action::Pop => {
-                    self.screens.pop().unwrap().exit(game);
+                    self.screens.last().unwrap().exit(game);
+                    self.screens.pop();
                 }
                 Action::Help => self.screens.push(game.help.clone()),
             }
@@ -62,6 +70,7 @@ pub enum Action {
     Keep,
     Pop,
     Push(Rc<dyn Screen>),
+    Replace(Rc<dyn Screen>),
     Help,
 }
 

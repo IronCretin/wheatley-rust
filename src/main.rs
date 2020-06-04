@@ -1,5 +1,6 @@
 use std::rc::Rc;
 
+use tcod::colors::*;
 use tcod::console::{FontLayout, Root};
 
 pub mod game;
@@ -10,17 +11,29 @@ use screen::menu::MenuScreen;
 use screen::textbox::TextBox;
 use screen::{Action, ScreenStack};
 
+pub mod map;
+pub mod player;
+
+pub mod tile;
+use tile::Tile;
 
 const SCREEN_WIDTH: i32 = 100;
 const SCREEN_HEIGHT: i32 = 45;
 
 const LIMIT_FPS: i32 = 20;
 
+pub const PLAYER_TILE: Tile = Tile {
+    ch: '@',
+    fg: GREEN,
+    bg: BLACK,
+};
+
 fn main() {
     let root = Root::initializer()
         .font("curses_vector_16x24.png", FontLayout::AsciiInRow)
         .size(SCREEN_WIDTH, SCREEN_HEIGHT)
-        .title("Example")
+        .title("Wheatley")
+        .fullscreen(false)
         .init();
     tcod::system::set_fps(LIMIT_FPS);
 
