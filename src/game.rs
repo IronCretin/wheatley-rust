@@ -1,6 +1,7 @@
 use std::rc::Rc;
 
 use crate::player::Player;
+use crate::point::Point;
 use crate::screen::Screen;
 use crate::PLAYER_TILE;
 
@@ -15,7 +16,10 @@ impl Game {
         Game {
             menu,
             help,
-            player: Player { tile: PLAYER_TILE },
+            player: Player {
+                tile: PLAYER_TILE,
+                pos: Point(0, 0),
+            },
         }
     }
 }

@@ -13,6 +13,7 @@ use screen::{Action, ScreenStack};
 
 pub mod map;
 pub mod player;
+pub mod point;
 
 pub mod tile;
 use tile::Tile;

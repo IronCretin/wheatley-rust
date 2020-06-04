@@ -1,23 +1,37 @@
-use crate::tile::{Tile, FLOOR};
 use ndarray::{Array, Array2};
 use tcod::map::Map;
+
+pub mod gen;
+
+pub mod tile;
+use tile::{MapTile, DEFAULT_TILE};
 
 pub struct Level {
     pub width: i32,
     pub height: i32,
-    pub map: Map,
-    pub tiles: Array2<Tile>,
+    map: Map,
+    tiles: Array2<MapTile>,
+    pub seen: Array2<bool>,
 }
 
 impl Level {
     fn new(width: i32, height: i32) -> Level {
+        let tile = DEFAULT_TILE;
         let mut map = Map::new(width, height);
-        map.clear(true, true);
+        map.clear(tile.transparent, tile.walkable);
         Level {
             width,
             height,
             map,
-            tiles: Array::from_elem((width as usize, height as usize), FLOOR),
+            tiles: Array::from_elem((width as usize, height as usize), tile),
+            seen: Array::from_elem((width as usize, height as usize), false),
         }
+    }
+    fn get(&self, x: i32, y: i32) -> &MapTile {
+        return &self.tiles[[x as usize, y as usize]];
+    }
+    fn set(&mut self, x: i32, y: i32, t: MapTile) {
+        self.map.set(x, y, t.transparent, t.walkable);
+        self.tiles[[x as usize, y as usize]] = t;
     }
 }
