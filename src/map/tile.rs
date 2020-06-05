@@ -33,7 +33,7 @@ pub const WALL: MapTile = MapTile {
         fg: WHITE,
         bg: BLACK,
     },
-    transparent: false,
+    transparent: true,
     walkable: false,
     action: Action::None,
 };

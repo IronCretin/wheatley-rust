@@ -1,5 +1,6 @@
+use rand::seq::SliceRandom;
 use rand::Rng;
-use rand_distr::{Distribution, Triangular};
+use rand_distr::{Distribution, Triangular, Uniform};
 
 use super::{Empty, Generator};
 use crate::map::tile::*;
@@ -37,10 +38,10 @@ fn create<R: Rng>(
     depth: i32,
     minr: i32,
     xaxis: bool,
-    x0: i32,
-    x1: i32,
-    y0: i32,
-    y1: i32,
+    mut x0: i32,
+    mut x1: i32,
+    mut y0: i32,
+    mut y1: i32,
     rng: &mut R,
 ) {
     let hw = depth / 2 + 1;
@@ -88,5 +89,168 @@ fn create<R: Rng>(
             create(level, depth - 1, minr, !xaxis, x0, x1, y0, y - 1, rng);
             create(level, depth - 1, minr, !xaxis, x0, x1, y + hw + 1, y1, rng);
         }
+    } else {
+        // rooms
+        use Side::*;
+        // if rng.gen_bool(0.1) {
+        //     // empty block
+        //     return;
+        // }
+        let nsides = Uniform::new_inclusive(2, 3).sample(rng);
+        for dir in [Top, Bottom, Left, Right].choose_multiple(rng, nsides) {
+            match dir {
+                Top => {
+                    if y0 != 1 && y1 - y0 >= minr {
+                        let mut x = x0;
+                        let mut height = 0;
+                        while x1 - x >= minr {
+                            let (w, h) = create_room(
+                                level,
+                                x,
+                                y0,
+                                (1, 0),
+                                (0, 1),
+                                minr,
+                                x1 - x,
+                                minr,
+                                y1 - y0,
+                                rng,
+                            );
+                            x += w + 1;
+                            if h > height {
+                                height = h;
+                            }
+                        }
+                        y0 += height + 1;
+                    }
+                }
+                Bottom => {
+                    if y0 != level.height - 2 && y1 - y0 >= minr {
+                        let mut x = x0;
+                        let mut height = 0;
+                        while x1 - x >= minr {
+                            let (w, h) = create_room(
+                                level,
+                                x,
+                                y1 - 1,
+                                (1, 0),
+                                (0, -1),
+                                minr,
+                                x1 - x,
+                                minr,
+                                y1 - y0,
+                                rng,
+                            );
+                            x += w + 1;
+                            if h > height {
+                                height = h;
+                            }
+                        }
+                        y1 -= height + 1;
+                    }
+                }
+                Left => {
+                    if x0 != 1 && x1 - x0 >= minr {
+                        let mut y = y0;
+                        let mut height = 0;
+                        while y1 - y >= minr {
+                            let (w, h) = create_room(
+                                level,
+                                x0,
+                                y,
+                                (0, 1),
+                                (1, 0),
+                                minr,
+                                y1 - y,
+                                minr,
+                                x1 - x0,
+                                rng,
+                            );
+                            y += w + 1;
+                            if h > height {
+                                height = h;
+                            }
+                        }
+                        x1 -= height + 1;
+                    }
+                }
+                Right => {
+                    if x0 != level.height - 2 && x1 - x0 >= minr {
+                        let mut y = y0;
+                        let mut height = 0;
+                        while y1 - y >= minr {
+                            let (w, h) = create_room(
+                                level,
+                                x1 - 1,
+                                y,
+                                (0, 1),
+                                (-1, 0),
+                                minr,
+                                y1 - y,
+                                minr,
+                                x1 - x0,
+                                rng,
+                            );
+                            y += w + 1;
+                            if h > height {
+                                height = h;
+                            }
+                        }
+                        x0 += height + 1;
+                    }
+                }
+            }
+        }
     }
+}
+fn create_room<R: Rng>(
+    level: &mut Level,
+    x0: i32,
+    y0: i32,
+    dx: (i32, i32),
+    dy: (i32, i32),
+    xmin: i32,
+    xmax: i32,
+    ymin: i32,
+    ymax: i32,
+    rng: &mut R,
+) -> (i32, i32) {
+    let mut place = |x: i32, y: i32, t| {
+        if x0 + x * dx.0 + y * dy.0 < 0 || y0 + x * dx.1 + y * dy.1 < 0 {
+            println!(
+                "tried to draw {},{} (really {},{})",
+                x,
+                y,
+                x0 + x * dx.0 + y * dy.0,
+                y0 + x * dx.1 + y * dy.1
+            );
+        }
+        level.set(x0 + x * dx.0 + y * dy.0, y0 + x * dx.1 + y * dy.1, t);
+    };
+    let w = if xmin > xmax / 2 {
+        xmax
+    } else {
+        Uniform::new_inclusive(xmin, xmax).sample(rng)
+    };
+    let h = if ymin > ymax / 2 {
+        ymax
+    } else {
+        Uniform::new_inclusive(ymin, ymax / 2).sample(rng)
+    };
+    for x in 0..w {
+        for y in 0..h {
+            place(x, y, FLOOR);
+        }
+    }
+    for x in 0..w {
+        place(x, -1, DOOR)
+    }
+    (w, h)
+}
+
+enum Side {
+    Top,
+    Bottom,
+    Left,
+    Right,
 }
