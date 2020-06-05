@@ -96,9 +96,9 @@ fn create<R: Rng>(
         //     // empty block
         //     return;
         // }
-        let nsides = Uniform::new_inclusive(2, 3).sample(rng);
-        for dir in [Top, Bottom, Left, Right].choose_multiple(rng, nsides) {
-            match dir {
+        let nsides = Uniform::new_inclusive(3, 4).sample(rng);
+        for side in [Top, Bottom, Left, Right].choose_multiple(rng, nsides) {
+            match side {
                 Top => {
                     if y0 != 1 && y1 - y0 >= minr {
                         let mut x = x0;
@@ -171,7 +171,7 @@ fn create<R: Rng>(
                                 height = h;
                             }
                         }
-                        x1 -= height + 1;
+                        x0 += height + 1;
                     }
                 }
                 Right => {
@@ -196,7 +196,7 @@ fn create<R: Rng>(
                                 height = h;
                             }
                         }
-                        x0 += height + 1;
+                        x1 -= height + 1;
                     }
                 }
             }
@@ -232,22 +232,18 @@ fn create_room<R: Rng>(
     } else {
         Uniform::new_inclusive(xmin, xmax).sample(rng)
     };
-    let h = if ymin > ymax / 2 {
-        ymax
-    } else {
-        Uniform::new_inclusive(ymin, ymax / 2).sample(rng)
-    };
+    let h = if ymin > ymax / 2 { ymax } else { ymin };
     for x in 0..w {
         for y in 0..h {
             place(x, y, FLOOR);
         }
     }
-    for x in 0..w {
-        place(x, -1, DOOR)
-    }
+    let dx = *[0, w-1].choose(rng).unwrap();
+    place(dx, -1, DOOR);
     (w, h)
 }
 
+#[derive(Debug)]
 enum Side {
     Top,
     Bottom,

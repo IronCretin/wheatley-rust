@@ -23,7 +23,7 @@ pub struct Game {
 const MAX_ATTEMPTS: i32 = 100;
 
 impl Game {
-    pub fn new(menu: Rc<dyn Screen>, help: Rc<dyn Screen>) -> Game {
+    pub fn new(menu: Rc<dyn Screen>, help: Rc<dyn Screen>, seed: u64) -> Game {
         let mut game = Game {
             menu,
             help,
@@ -34,9 +34,9 @@ impl Game {
             level: 0,
             floors: Vec::new(),
             basement: Vec::new(),
-            map_rng: Pcg32::from_entropy(),
+            map_rng: Pcg32::seed_from_u64(seed),
         };
-        let floor = Level::generate(200, 200, &mut game.map_rng, Hallways::new(6, 6));
+        let floor = Level::generate(200, 200, &mut game.map_rng, Hallways::new(7, 6));
         let px = Uniform::from(0..floor.width);
         let py = Uniform::from(0..floor.height);
         for _ in 0..MAX_ATTEMPTS {

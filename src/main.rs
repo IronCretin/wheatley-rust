@@ -1,3 +1,6 @@
+use std::collections::hash_map::DefaultHasher;
+use std::env;
+use std::hash::Hasher;
 use std::rc::Rc;
 
 use tcod::colors::*;
@@ -43,6 +46,12 @@ fn main() {
 
     tcod::system::set_fps(LIMIT_FPS);
 
+    let mut hasher = DefaultHasher::new();
+
+    env::args().nth(1).map(|s| hasher.write(s.as_bytes()));
+
+    let seed: u64 = hasher.finish();
+
     let help = Rc::new(TextBox::new(
         Some(String::from("Help")),
         String::from(
@@ -85,7 +94,7 @@ r#"+-------------------------------------------------------------------------+
             )))),
             (String::from("Quit"), Action::Pop),
         ]
-    )),help);
+    )), help, seed);
 
     let screens = ScreenStack::new(root);
     screens.play(&mut game);

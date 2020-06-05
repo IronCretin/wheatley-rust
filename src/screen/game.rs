@@ -51,6 +51,7 @@ impl Screen for GameScreen {
                 pos += Point(0, 1)
             }
             Key { printable: 'n', .. } | Key { code: NumPad3, .. } => pos += Point(1, 1),
+            Key { printable: 'x', .. } => println!("{:?}", pos),
             Key { printable: 'c', .. } => {
                 let l = game.cur_level_mut();
                 for x in -1..=1 {
