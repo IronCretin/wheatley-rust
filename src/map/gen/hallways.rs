@@ -22,7 +22,7 @@ impl Generator for Hallways {
             level,
             self.depth,
             self.minr,
-            true, // rng.gen(),
+            rng.gen(),
             1,
             level.width - 1,
             1,
