@@ -33,6 +33,7 @@ impl Screen for GameScreen {
     fn handle(&self, game: &mut Game, key: Key) -> Action {
         use super::KeyCode::*;
         let mut pos = game.player.pos;
+        let l = game.cur_level_mut();
         match key {
             Key { printable: 'y', .. } | Key { code: NumPad7, .. } => pos += Point(-1, -1),
             Key { printable: 'k', .. } | Key { code: NumPad8, .. } | Key { code: Up, .. } => {
@@ -50,9 +51,13 @@ impl Screen for GameScreen {
                 pos += Point(0, 1)
             }
             Key { printable: 'n', .. } | Key { code: NumPad3, .. } => pos += Point(1, 1),
-            Key { printable: 'x', .. } => println!("{:?}", pos),
+            Key { printable: 'x', .. } => println!(
+                "{}, {}: {}",
+                pos.0,
+                pos.1,
+                l.fov_data.is_transparent(pos.0 as usize, pos.1 as usize)
+            ),
             Key { printable: 'c', .. } => {
-                let l = game.cur_level_mut();
                 for x in -1..=1 {
                     for y in -1..=1 {
                         if x != 0 || y != 0 {
@@ -81,7 +86,6 @@ impl Screen for GameScreen {
             }
             _ => return handle_default(game, key),
         }
-        let l = game.cur_level_mut();
         let mut tick = false;
         if 0 <= pos.0 && pos.0 < l.width && 0 <= pos.1 && pos.1 < l.height {
             let tile = l.get(pos.0, pos.1);

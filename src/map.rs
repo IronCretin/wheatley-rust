@@ -1,7 +1,6 @@
+use doryen_fov::{FovAlgorithm, FovRestrictive, MapData};
 use ndarray::{Array, Array2};
 use rand::Rng;
-use tcod::map::FovAlgorithm::Permissive2;
-use tcod::map::Map;
 
 pub mod gen;
 pub mod tile;
@@ -12,7 +11,7 @@ use tile::{MapTile, DEFAULT_TILE};
 pub struct Level {
     pub width: i32,
     pub height: i32,
-    map: Map,
+    pub fov_data: MapData,
     tiles: Array2<MapTile>,
     pub seen: Array2<bool>,
 }
@@ -25,12 +24,16 @@ impl Level {
     }
     fn new(width: i32, height: i32) -> Level {
         let tile = DEFAULT_TILE;
-        let mut map = Map::new(width, height);
-        map.clear(tile.transparent, tile.walkable);
+        let mut fov_data = MapData::new(width as usize, height as usize);
+        for x in 0..width as usize {
+            for y in 0..width as usize {
+                fov_data.set_transparent(x, y, tile.transparent);
+            }
+        }
         Level {
             width,
             height,
-            map,
+            fov_data,
             tiles: Array::from_elem((width as usize, height as usize), tile),
             seen: Array::from_elem((width as usize, height as usize), false),
         }
@@ -42,13 +45,21 @@ impl Level {
         return &mut self.tiles[[x as usize, y as usize]];
     }
     pub fn set(&mut self, x: i32, y: i32, t: MapTile) {
-        self.map.set(x, y, t.transparent, t.walkable);
+        self.fov_data
+            .set_transparent(x as usize, y as usize, t.transparent);
         self.tiles[[x as usize, y as usize]] = t;
     }
     pub fn compute_fov(&mut self, x: i32, y: i32, radius: i32) {
-        self.map.compute_fov(x, y, radius, true, Permissive2);
+        self.fov_data.clear_fov();
+        FovRestrictive::default().compute_fov(
+            &mut self.fov_data,
+            x as usize,
+            y as usize,
+            radius as usize,
+            true,
+        );
     }
     pub fn is_in_fov(&self, x: i32, y: i32) -> bool {
-        self.map.is_in_fov(x, y)
+        self.fov_data.is_in_fov(x as usize, y as usize)
     }
 }

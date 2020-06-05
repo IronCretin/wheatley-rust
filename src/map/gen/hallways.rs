@@ -2,7 +2,7 @@ use rand::seq::SliceRandom;
 use rand::Rng;
 use rand_distr::{Distribution, Triangular, Uniform};
 
-use super::{Empty, Generator};
+use super::Generator;
 use crate::map::tile::*;
 use crate::map::Level;
 
@@ -29,7 +29,6 @@ impl Generator for Hallways {
             level.height - 1,
             rng,
         );
-        Empty.generate(rng, level);
     }
 }
 

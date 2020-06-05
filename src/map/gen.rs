@@ -1,6 +1,6 @@
 use rand::Rng;
 
-use super::tile::WALL;
+use super::tile::FLOOR;
 use crate::map::Level;
 
 pub mod hallways;
@@ -14,15 +14,10 @@ pub struct Empty;
 
 impl Generator for Empty {
     fn generate<R: Rng>(&self, _rng: &mut R, level: &mut Level) {
-        let h = level.height - 1;
-        for x in 0..level.width {
-            level.set(x, 0, WALL);
-            level.set(x, h, WALL);
-        }
-        let w = level.height - 1;
-        for y in 0..level.height {
-            level.set(0, y, WALL);
-            level.set(w, y, WALL);
+        for x in 1..level.width - 1 {
+            for y in 0..level.height - 1 {
+                level.set(x, y, FLOOR);
+            }
         }
     }
 }
@@ -31,11 +26,10 @@ pub struct Percent(pub f64);
 
 impl Generator for Percent {
     fn generate<R: Rng>(&self, rng: &mut R, level: &mut Level) {
-        Empty.generate(rng, level);
         for x in 0..level.width {
             for y in 0..level.height {
-                if rng.gen_bool(self.0) {
-                    level.set(x, y, WALL);
+                if rng.gen_bool(1.0 - self.0) {
+                    level.set(x, y, FLOOR);
                 }
             }
         }
