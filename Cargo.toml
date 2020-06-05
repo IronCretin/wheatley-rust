@@ -9,3 +9,6 @@ edition = "2018"
 [dependencies]
 tcod = "0.15.0"
 ndarray = "0.13.1"
+rand = "0.7.3"
+rand_pcg = "0.2.1"
+rand_distr = "0.2.2"

@@ -1,6 +1,6 @@
 use ndarray::{Array, Array2};
+use rand::Rng;
 use tcod::map::Map;
-use tcod::random::Rng;
 
 pub mod gen;
 pub mod tile;
@@ -17,7 +17,7 @@ pub struct Level {
 }
 
 impl Level {
-    pub fn generate<T: Generator>(width: i32, height: i32, rng: &mut Rng, gen: T) -> Level {
+    pub fn generate<T: Generator, R: Rng>(width: i32, height: i32, rng: &mut R, gen: T) -> Level {
         let mut l = Level::new(width, height);
         gen.generate(rng, &mut l);
         l
@@ -36,6 +36,9 @@ impl Level {
     }
     pub fn get(&self, x: i32, y: i32) -> &MapTile {
         return &self.tiles[[x as usize, y as usize]];
+    }
+    pub fn get_mut(&mut self, x: i32, y: i32) -> &mut MapTile {
+        return &mut self.tiles[[x as usize, y as usize]];
     }
     pub fn set(&mut self, x: i32, y: i32, t: MapTile) {
         self.map.set(x, y, t.transparent, t.walkable);

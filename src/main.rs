@@ -32,8 +32,6 @@ pub const PLAYER_TILE: Tile = Tile {
 pub const PLAYER_FOV: i32 = 10;
 
 fn main() {
-    println!("{:?}", tcod::chars::HLINE);
-
     let mut root = Root::initializer()
         .renderer(Renderer::SDL)
         .font("curses_vector_16x24.png", FontLayout::AsciiInRow)

@@ -1,10 +1,11 @@
 use tcod::colors::*;
 use tcod::console::{Console, Root};
 use tcod::input::Key;
-use tcod::map::FovAlgorithm::Basic;
+use tcod::map::FovAlgorithm::Permissive2;
 
 use super::{handle_default, Action, Screen};
 use crate::game::Game;
+use crate::map::tile::{Action as TAction, MapTile};
 use crate::point::Point;
 use crate::PLAYER_FOV;
 
@@ -50,19 +51,63 @@ impl Screen for GameScreen {
                 pos += Point(0, 1)
             }
             Key { printable: 'n', .. } | Key { code: NumPad3, .. } => pos += Point(1, 1),
+            Key { printable: 'c', .. } => {
+                let l = game.cur_level_mut();
+                for x in -1..=1 {
+                    for y in -1..=1 {
+                        if x != 0 || y != 0 {
+                            let p = pos + Point(x, y);
+                            let tile = l.get(p.0, p.1);
+                            if let TAction::Close(ctile, ctransparent, cwalkable) = tile.action {
+                                let otile = tile.clone();
+                                l.set(
+                                    p.0,
+                                    p.1,
+                                    MapTile {
+                                        tile: ctile,
+                                        transparent: ctransparent,
+                                        walkable: cwalkable,
+                                        action: TAction::Open(
+                                            otile.tile,
+                                            otile.transparent,
+                                            otile.walkable,
+                                        ),
+                                    },
+                                );
+                            }
+                        }
+                    }
+                }
+            }
             _ => return handle_default(game, key),
         }
-        let l = game.cur_level();
-        if 0 <= pos.0
-            && pos.0 < l.width
-            && 0 <= pos.1
-            && pos.1 < l.height
-            && l.get(pos.0, pos.1).walkable
-        {
-            game.player.pos = pos;
+        let l = game.cur_level_mut();
+        let mut tick = false;
+        if 0 <= pos.0 && pos.0 < l.width && 0 <= pos.1 && pos.1 < l.height {
+            let tile = l.get(pos.0, pos.1);
+            if tile.walkable {
+                game.player.pos = pos;
+                tick = true
+            } else if let TAction::Open(otile, otransparent, owalkable) = tile.action {
+                let ctile = tile.clone();
+                l.set(
+                    pos.0,
+                    pos.1,
+                    MapTile {
+                        tile: otile,
+                        transparent: otransparent,
+                        walkable: owalkable,
+                        action: TAction::Close(ctile.tile, ctile.transparent, ctile.walkable),
+                    },
+                );
+                pos = game.player.pos;
+                tick = true
+            }
+        }
+        if tick {
             game.cur_level_mut()
                 .map
-                .compute_fov(pos.0, pos.1, PLAYER_FOV, true, Basic);
+                .compute_fov(pos.0, pos.1, PLAYER_FOV, true, Permissive2);
         }
         Action::Keep
     }
@@ -70,6 +115,6 @@ impl Screen for GameScreen {
         let pos = game.player.pos;
         game.cur_level_mut()
             .map
-            .compute_fov(pos.0, pos.1, PLAYER_FOV, true, Basic);
+            .compute_fov(pos.0, pos.1, PLAYER_FOV, true, Permissive2);
     }
 }

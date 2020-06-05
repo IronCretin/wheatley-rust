@@ -3,7 +3,7 @@ use tcod::console::{Console, Root};
 
 use crate::point::Point;
 
-#[derive(Clone)]
+#[derive(Copy, Clone, Debug)]
 pub struct Tile {
     pub ch: char,
     pub fg: Color,
