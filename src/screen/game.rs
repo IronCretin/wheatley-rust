@@ -1,7 +1,6 @@
 use tcod::colors::*;
 use tcod::console::{Console, Root};
 use tcod::input::Key;
-use tcod::map::FovAlgorithm::Permissive2;
 
 use super::{handle_default, Action, Screen};
 use crate::game::Game;
@@ -20,7 +19,7 @@ impl Screen for GameScreen {
             for y in 0..display.height() {
                 let p = Point(x, y) + offset;
                 if 0 <= p.0 && p.0 < level.width && 0 <= p.1 && p.1 < level.height {
-                    if level.map.is_in_fov(p.0, p.1) {
+                    if level.is_in_fov(p.0, p.1) {
                         level.seen[[p.0 as usize, p.1 as usize]] = true;
                         level.get(p.0, p.1).draw(Point(x, y), display);
                     } else if level.seen[[p.0 as usize, p.1 as usize]] {
@@ -106,16 +105,12 @@ impl Screen for GameScreen {
             }
         }
         if tick {
-            game.cur_level_mut()
-                .map
-                .compute_fov(pos.0, pos.1, PLAYER_FOV, true, Permissive2);
+            game.cur_level_mut().compute_fov(pos.0, pos.1, PLAYER_FOV);
         }
         Action::Keep
     }
     fn enter(&self, game: &mut Game) {
         let pos = game.player.pos;
-        game.cur_level_mut()
-            .map
-            .compute_fov(pos.0, pos.1, PLAYER_FOV, true, Permissive2);
+        game.cur_level_mut().compute_fov(pos.0, pos.1, PLAYER_FOV);
     }
 }

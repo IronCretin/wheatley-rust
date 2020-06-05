@@ -238,7 +238,7 @@ fn create_room<R: Rng>(
             place(x, y, FLOOR);
         }
     }
-    let dx = *[0, w-1].choose(rng).unwrap();
+    let dx = *[0, w - 1].choose(rng).unwrap();
     place(dx, -1, DOOR);
     (w, h)
 }
