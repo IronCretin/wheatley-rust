@@ -16,7 +16,7 @@ pub struct Game {
     pub player: Player,
     pub level: i32,
     floors: Vec<Level>,
-    // basement: Vec<Level>,
+    basement: Vec<Level>,
     pub map_rng: Pcg32,
 }
 
@@ -33,7 +33,7 @@ impl Game {
             },
             level: 0,
             floors: Vec::new(),
-            // basement: Vec::new(),
+            basement: Vec::new(),
             map_rng: Pcg32::seed_from_u64(seed),
         };
         let floor = Level::generate(200, 200, &mut game.map_rng, Hallways::new(7, 6));
@@ -50,18 +50,18 @@ impl Game {
         game.floors.push(floor);
         game
     }
-    // pub fn cur_level(&self) -> &Level {
-    //     if self.level < 0 {
-    //         &self.basement[(-self.level + 1) as usize]
-    //     } else {
-    //         &self.floors[self.level as usize]
-    //     }
-    // }
-    // pub fn cur_level_mut(&mut self) -> &mut Level {
-    //     if self.level < 0 {
-    //         &mut self.basement[(-self.level + 1) as usize]
-    //     } else {
-    //         &mut self.floors[self.level as usize]
-    //     }
-    // }
+    pub fn cur_level(&self) -> &Level {
+        if self.level < 0 {
+            &self.basement[(-self.level + 1) as usize]
+        } else {
+            &self.floors[self.level as usize]
+        }
+    }
+    pub fn cur_level_mut(&mut self) -> &mut Level {
+        if self.level < 0 {
+            &mut self.basement[(-self.level + 1) as usize]
+        } else {
+            &mut self.floors[self.level as usize]
+        }
+    }
 }

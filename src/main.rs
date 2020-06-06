@@ -9,7 +9,7 @@ pub mod game;
 use game::Game;
 
 pub mod screen;
-// use screen::game::GameScreen;
+use screen::game::GameScreen;
 use screen::menu::MenuScreen;
 use screen::textbox::TextBox;
 use screen::{Action, WheatleyEngine};
@@ -33,7 +33,7 @@ pub const PLAYER_TILE: Tile = Tile {
     fg: DARK_GREEN,
     bg: BLACK,
 };
-// pub const PLAYER_FOV: i32 = 10;
+pub const PLAYER_FOV: i32 = 10;
 
 fn main() {
     let mut app = App::new(AppOptions {
@@ -88,7 +88,7 @@ r#"+-------------------------------------------------------------------------+
 | |_____/|_|_| |_| |_|\__,_|_|\__,_|\__\___/|_|    |____|\___/____|\___/  |
 +-------------------------------------------------------------------------+"#),
             vec![
-                // (String::from("Play!"), Action::Push(Rc::new(GameScreen))),
+                (String::from("Play!"), Action::Push(Rc::new(GameScreen))),
                 (String::from("Help"), Action::Push(help.clone())),
                 (String::from("Credits"), Action::Push(Rc::new(TextBox::new(
                     Some(String::from("Credits")),

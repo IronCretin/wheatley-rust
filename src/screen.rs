@@ -5,7 +5,7 @@ use doryen_rs::{Console, DoryenApi, Engine, UpdateEvent};
 use crate::colors::*;
 use crate::game::Game;
 
-// pub mod game;
+pub mod game;
 pub mod menu;
 pub mod textbox;
 
@@ -96,6 +96,7 @@ pub enum Action {
 }
 
 #[allow(dead_code)]
+#[derive(Debug)]
 pub struct Key<'a> {
     key: &'a str,
     ctrl: bool,
@@ -120,10 +121,13 @@ pub fn handle_default(game: &Game, key: Key) -> Action {
     match key {
         Key { key: "Escape", .. } => Pop,
         Key {
-            key: "Slash",
+            key: "NumpadDivide",
             shift: true,
             ..
-        } => Push(game.help.clone()),
+        } => {
+            println!("help");
+            Push(game.help.clone())
+        }
         _ => Keep,
     }
 }
