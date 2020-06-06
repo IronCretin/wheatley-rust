@@ -3,48 +3,51 @@ use std::env;
 use std::hash::Hasher;
 use std::rc::Rc;
 
-use tcod::colors::*;
-use tcod::console::{Console, FontLayout, Renderer, Root};
+use doryen_rs::{App, AppOptions};
 
 pub mod game;
 use game::Game;
 
 pub mod screen;
-use screen::game::GameScreen;
+// use screen::game::GameScreen;
 use screen::menu::MenuScreen;
 use screen::textbox::TextBox;
-use screen::{Action, ScreenStack};
+use screen::{Action, WheatleyEngine};
 
+pub mod colors;
 pub mod map;
 pub mod player;
 pub mod point;
-
 pub mod tile;
+
+use colors::{BLACK, DARK_GREEN};
 use tile::Tile;
 
-const SCREEN_WIDTH: i32 = 100;
-const SCREEN_HEIGHT: i32 = 45;
+const SCREEN_WIDTH: u32 = 100;
+const SCREEN_HEIGHT: u32 = 45;
 
-const LIMIT_FPS: i32 = 30;
+// const LIMIT_FPS: i32 = 30;
 
 pub const PLAYER_TILE: Tile = Tile {
-    ch: '@',
+    ch: '@' as u16,
     fg: DARK_GREEN,
     bg: BLACK,
 };
-pub const PLAYER_FOV: i32 = 10;
+// pub const PLAYER_FOV: i32 = 10;
 
 fn main() {
-    let mut root = Root::initializer()
-        .renderer(Renderer::SDL)
-        .font("curses_vector_16x24.png", FontLayout::AsciiInRow)
-        .size(SCREEN_WIDTH, SCREEN_HEIGHT)
-        .title("Wheatley")
-        .fullscreen(false)
-        .init();
-    root.set_default_foreground(WHITE);
+    let mut app = App::new(AppOptions {
+        console_width: SCREEN_WIDTH,
+        console_height: SCREEN_HEIGHT,
+        screen_width: SCREEN_WIDTH * 8,
+        screen_height: SCREEN_HEIGHT * 12,
+        window_title: "Wheatley Simulator".to_owned(),
+        font_path: "curses_vector_8x12.png".to_owned(),
+        vsync: false,
+        ..AppOptions::default()
+    });
 
-    tcod::system::set_fps(LIMIT_FPS);
+    //     tcod::system::set_fps(LIMIT_FPS);
 
     let mut hasher = DefaultHasher::new();
 
@@ -67,7 +70,7 @@ You can also use numpad or vi-keys:
         true,
     ));
 
-    let mut game = Game::new(Rc::new(MenuScreen::new(String::from(
+    let game = Game::new(Rc::new(MenuScreen::new(String::from(
 r#"+-------------------------------------------------------------------------+
 |           __          ___                _   _                          |
 |           \ \        / / |              | | | |                         |
@@ -84,18 +87,21 @@ r#"+-------------------------------------------------------------------------+
 |  ____) | | | | | | | |_| | | (_| | || (_) | |     / /_| |_| / /_| |_| | |
 | |_____/|_|_| |_| |_|\__,_|_|\__,_|\__\___/|_|    |____|\___/____|\___/  |
 +-------------------------------------------------------------------------+"#),
-        vec![
-            (String::from("Play!"), Action::Push(Rc::new(GameScreen))),
-            (String::from("Help"), Action::Push(help.clone())),
-            (String::from("Credits"), Action::Push(Rc::new(TextBox::new(
-                Some(String::from("Credits")),
-                String::from("Game by Paul Maynard\nFlavor text contributed by:\n - Joyce Quach\ncurses_vector tileset by DragonDePlatino"),
-                50, 20, true
-            )))),
-            (String::from("Quit"), Action::Pop),
-        ]
-    )), help, seed);
+            vec![
+                // (String::from("Play!"), Action::Push(Rc::new(GameScreen))),
+                (String::from("Help"), Action::Push(help.clone())),
+                (String::from("Credits"), Action::Push(Rc::new(TextBox::new(
+                    Some(String::from("Credits")),
+                    String::from("Game by Paul Maynard\nFlavor text contributed by:\n - Joyce Quach\ncurses_vector tileset by DragonDePlatino"),
+                    50, 20, true
+                )))),
+                (String::from("Quit"), Action::Pop),
+            ]
+        )), help, seed);
 
-    let screens = ScreenStack::new(root);
-    screens.play(&mut game);
+    let screens = WheatleyEngine::new(game);
+
+    app.set_engine(Box::new(screens));
+
+    app.run();
 }

@@ -26,12 +26,6 @@ checksum = "1b20b618342cf9891c292c4f5ac2cde7287cc5c87e87e9c769d617793607dec1"
 
 [[package]]
 name = "bitflags"
-version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2a6577517ecd0ee0934f48a7295a89aaef3e6dfafeac404f94c0b3448518ddfe"
-
-[[package]]
-name = "bitflags"
 version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cf1de2fe8c75bc145a2f577add951f8134889b4795d47466a54a5c846d691693"
@@ -88,7 +82,7 @@ version = "0.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ddfc5b9aa5d4507acaf872de71051dfd0e309860e88966e1051e462a077aac4f"
 dependencies = [
- "bitflags 1.2.1",
+ "bitflags",
 ]
 
 [[package]]
@@ -97,7 +91,7 @@ version = "0.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7b44bd25bd275e9d74a5dff8ca55f2fb66c9ad5e12170d58697701df21a56e0e"
 dependencies = [
- "bitflags 1.2.1",
+ "bitflags",
  "block",
  "core-graphics",
  "libc",
@@ -126,7 +120,7 @@ version = "0.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e54c4ab33705fa1fc8af375bb7929d68e1c1546c1ecef408966d8c3e49a1d84a"
 dependencies = [
- "bitflags 1.2.1",
+ "bitflags",
  "core-foundation",
  "foreign-types",
  "libc",
@@ -313,7 +307,7 @@ dependencies = [
  "core-foundation",
  "core-graphics",
  "gl_generator 0.9.0",
- "lazy_static 1.4.0",
+ "lazy_static",
  "libc",
  "objc",
  "osmesa-sys",
@@ -388,12 +382,6 @@ name = "khronos_api"
 version = "3.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e2db585e1d738fc771bf08a151420d3ed193d9d895a36df7f6f8a9456b911ddc"
-
-[[package]]
-name = "lazy_static"
-version = "0.1.16"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cf186d1a8aa5f5bee5fd662bc9c1b949e0259e1bcc379d1f006847b0080c7417"
 
 [[package]]
 name = "lazy_static"
@@ -497,7 +485,7 @@ version = "0.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "becb657d662f1cd2ef38c7ad480ec6b8cf9e96b27adb543e594f9cf0f2e6065c"
 dependencies = [
- "bitflags 1.2.1",
+ "bitflags",
  "cc",
  "cfg-if",
  "libc",
@@ -623,7 +611,7 @@ version = "0.15.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ef859a23054bbfee7811284275ae522f0434a3c8e7f4b74bd4a35ae7e1c4a283"
 dependencies = [
- "bitflags 1.2.1",
+ "bitflags",
  "crc32fast",
  "deflate",
  "inflate",
@@ -855,7 +843,7 @@ version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5a9e7e0f2bfae24d8a5b5a66c5b257a83c7412304311512a0c054cd5e619da11"
 dependencies = [
- "lazy_static 1.4.0",
+ "lazy_static",
  "libc",
 ]
 
@@ -865,7 +853,7 @@ version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "83695fde96cbe9e08f0e4eb96b1b56fdbd44f2098ee27462dda964c7745fddc7"
 dependencies = [
- "bitflags 1.2.1",
+ "bitflags",
  "itertools",
  "proc-macro2 1.0.18",
  "quote 1.0.6",
@@ -887,10 +875,10 @@ version = "0.2.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2051bffc6cbf271176e8ba1527f801b6444567daee15951ff5152aaaf7777b2f"
 dependencies = [
- "bitflags 1.2.1",
+ "bitflags",
  "byteorder",
  "dlib",
- "lazy_static 1.4.0",
+ "lazy_static",
  "memmap",
  "nix",
  "tempfile",
@@ -979,27 +967,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "tcod"
-version = "0.15.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "44e518b0661949712e8dbc6d6d9d7c00a405dd88bc539102c1edfc2d22e5e144"
-dependencies = [
- "bitflags 0.1.1",
- "lazy_static 0.1.16",
- "tcod-sys",
-]
-
-[[package]]
-name = "tcod-sys"
-version = "5.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "730fb27d2261f7c860ae7a61c3ae70277f0836173ceeccb594193abb4fa5f4aa"
-dependencies = [
- "cc",
- "pkg-config",
-]
-
-[[package]]
 name = "tempfile"
 version = "3.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1085,7 +1052,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ded84f06e0ed21499f6184df0e0cb3494727b0c5da89534e0fcc55c51d812101"
 dependencies = [
  "bumpalo",
- "lazy_static 1.4.0",
+ "lazy_static",
  "log 0.4.8",
  "proc-macro2 1.0.18",
  "quote 1.0.6",
@@ -1128,7 +1095,7 @@ version = "0.20.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e7516a23419a55bd2e6d466c75a6a52c85718e5013660603289c2b8bee794b12"
 dependencies = [
- "bitflags 1.2.1",
+ "bitflags",
  "libc",
  "wayland-commons",
  "wayland-scanner",
@@ -1151,7 +1118,7 @@ version = "0.20.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bd4d31a96be6ecdbaddbf35200f5af2daee01be592afecd8feaf443d417e9230"
 dependencies = [
- "bitflags 1.2.1",
+ "bitflags",
  "wayland-client",
  "wayland-commons",
  "wayland-scanner",
@@ -1174,7 +1141,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "87c82ee658aa657fdfd7061f22e442030d921cfefc5bad68bcf41973e67922f7"
 dependencies = [
  "dlib",
- "lazy_static 1.4.0",
+ "lazy_static",
 ]
 
 [[package]]
@@ -1188,7 +1155,6 @@ dependencies = [
  "rand 0.7.3",
  "rand_distr",
  "rand_pcg",
- "tcod",
 ]
 
 [[package]]
@@ -1223,7 +1189,7 @@ dependencies = [
  "cocoa",
  "core-foundation",
  "core-graphics",
- "lazy_static 1.4.0",
+ "lazy_static",
  "libc",
  "log 0.4.8",
  "objc",
@@ -1241,7 +1207,7 @@ version = "2.18.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2bf981e3a5b3301209754218f962052d4d9ee97e478f4d26d4a6eced34c1fef8"
 dependencies = [
- "lazy_static 1.4.0",
+ "lazy_static",
  "libc",
  "maybe-uninit",
  "pkg-config",
@@ -1253,7 +1219,7 @@ version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3c1cb601d29fe2c2ac60a2b2e5e293994d87a1f6fa9687a31a15270f909be9c2"
 dependencies = [
- "bitflags 1.2.1",
+ "bitflags",
 ]
 
 [[package]]
