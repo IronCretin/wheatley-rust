@@ -9,6 +9,41 @@ use crate::PLAYER_FOV;
 
 pub struct GameScreen;
 
+impl GameScreen {
+    pub fn new() -> GameScreen {
+        GameScreen {}
+    }
+    fn player_move(&self, game: &mut Game, dpos: Point) {
+        let mut pos = game.player.pos + dpos;
+        let l = game.cur_level_mut();
+        let mut tick = false;
+        if 0 <= pos.0 && pos.0 < l.width && 0 <= pos.1 && pos.1 < l.height {
+            let tile = l.get(pos.0, pos.1);
+            if tile.walkable {
+                game.player.pos = pos;
+                tick = true
+            } else if let TAction::Open(otile, otransparent, owalkable) = tile.action {
+                let ctile = tile.clone();
+                l.set(
+                    pos.0,
+                    pos.1,
+                    MapTile {
+                        tile: otile,
+                        transparent: otransparent,
+                        walkable: owalkable,
+                        action: TAction::Close(ctile.tile, ctile.transparent, ctile.walkable),
+                    },
+                );
+                pos = game.player.pos;
+                tick = true
+            }
+        }
+        if tick {
+            game.cur_level_mut().compute_fov(pos.0, pos.1, PLAYER_FOV);
+        }
+    }
+}
+
 impl Screen for GameScreen {
     fn render(&self, game: &mut Game, con: &mut Console) {
         let pos = game.player.pos;
@@ -37,15 +72,9 @@ impl Screen for GameScreen {
         game.player.draw(game.player.pos - offset, con);
     }
     fn handle(&self, game: &mut Game, key: Key) -> Action {
-        let mut pos = game.player.pos;
+        let pos = game.player.pos;
         let l = game.cur_level_mut();
         match key {
-            Key { key: "KeyX", .. } => println!(
-                "{}, {}: {}",
-                pos.0,
-                pos.1,
-                l.fov_data.is_transparent(pos.0 as usize, pos.1 as usize)
-            ),
             Key { key: "KeyC", .. } => {
                 for x in -1..=1 {
                     for y in -1..=1 {
@@ -75,78 +104,29 @@ impl Screen for GameScreen {
             }
             _ => return handle_default(game, key),
         }
-        let mut tick = false;
-        if 0 <= pos.0 && pos.0 < l.width && 0 <= pos.1 && pos.1 < l.height {
-            let tile = l.get(pos.0, pos.1);
-            if tile.walkable {
-                game.player.pos = pos;
-                tick = true
-            } else if let TAction::Open(otile, otransparent, owalkable) = tile.action {
-                let ctile = tile.clone();
-                l.set(
-                    pos.0,
-                    pos.1,
-                    MapTile {
-                        tile: otile,
-                        transparent: otransparent,
-                        walkable: owalkable,
-                        action: TAction::Close(ctile.tile, ctile.transparent, ctile.walkable),
-                    },
-                );
-                pos = game.player.pos;
-                tick = true
-            }
-        }
-        if tick {
-            game.cur_level_mut().compute_fov(pos.0, pos.1, PLAYER_FOV);
-        }
         Action::Keep
     }
     fn handle_held<'a>(&self, game: &mut Game, held: Box<dyn Fn(&str) -> bool + 'a>) {
-        let mut pos = game.player.pos;
-        let l = game.cur_level_mut();
-        if held("KeyY") || held("Numpad7") {
-            pos += Point(-1, -1)
+        let dpos = if held("KeyY") || held("Numpad7") {
+            Point(-1, -1)
         } else if held("KeyK") || held("Numpad8") || held("ArrowUp") {
-            pos += Point(0, -1)
+            Point(0, -1)
         } else if held("KeyU") || held("Numpad9") {
-            pos += Point(1, -1)
+            Point(1, -1)
         } else if held("KeyH") || held("Numpad4") || held("ArrowLeft") {
-            pos += Point(-1, 0)
+            Point(-1, 0)
         } else if held("KeyL") || held("Numpad6") || held("ArrowRight") {
-            pos += Point(1, 0)
+            Point(1, 0)
         } else if held("KeyB") || held("Numpad1") {
-            pos += Point(-1, 1)
+            Point(-1, 1)
         } else if held("KeyJ") || held("Numpad2") || held("ArrowDown") {
-            pos += Point(0, 1)
+            Point(0, 1)
         } else if held("KeyN") || held("Numpad3") {
-            pos += Point(1, 1)
-        }
-        let mut tick = false;
-        if 0 <= pos.0 && pos.0 < l.width && 0 <= pos.1 && pos.1 < l.height {
-            let tile = l.get(pos.0, pos.1);
-            if tile.walkable {
-                game.player.pos = pos;
-                tick = true
-            } else if let TAction::Open(otile, otransparent, owalkable) = tile.action {
-                let ctile = tile.clone();
-                l.set(
-                    pos.0,
-                    pos.1,
-                    MapTile {
-                        tile: otile,
-                        transparent: otransparent,
-                        walkable: owalkable,
-                        action: TAction::Close(ctile.tile, ctile.transparent, ctile.walkable),
-                    },
-                );
-                pos = game.player.pos;
-                tick = true
-            }
-        }
-        if tick {
-            game.cur_level_mut().compute_fov(pos.0, pos.1, PLAYER_FOV);
-        }
+            Point(1, 1)
+        } else {
+            Point(0, 0)
+        };
+        self.player_move(game, dpos);
     }
     fn enter(&self, game: &mut Game) {
         let pos = game.player.pos;

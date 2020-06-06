@@ -1,9 +1,11 @@
+use std::collections::HashMap;
 use std::rc::Rc;
 
 use doryen_rs::{Console, DoryenApi, Engine, UpdateEvent};
 
 use crate::colors::*;
 use crate::game::Game;
+use crate::KEY_DELAY;
 
 pub mod game;
 pub mod menu;
@@ -12,13 +14,15 @@ pub mod textbox;
 pub struct WheatleyEngine {
     game: Game,
     screens: Vec<Rc<dyn Screen>>,
+    held_keys: HashMap<String, u32>,
 }
 
 impl WheatleyEngine {
-    pub fn new(game: Game) -> WheatleyEngine {
+    pub fn new(game: Game) -> Self {
         Self {
             game,
             screens: Vec::new(),
+            held_keys: HashMap::new(),
         }
     }
 }
@@ -34,12 +38,10 @@ impl Engine for WheatleyEngine {
     fn update(&mut self, api: &mut dyn DoryenApi) -> Option<UpdateEvent> {
         let input = api.input();
 
-        self.screens
-            .last_mut()
-            .unwrap()
-            .handle_held(&mut self.game, Box::new(|k| input.key(k)));
-
         for key in input.keys_pressed() {
+            if !self.held_keys.contains_key(key) {
+                self.held_keys.insert(key.to_owned(), 0);
+            }
             match key {
                 "ControlLeft" | "AltLeft" | "ShiftLeft" | "ShiftRight" => {}
                 _ => {
@@ -70,6 +72,26 @@ impl Engine for WheatleyEngine {
                 }
             }
         }
+        for key in input.keys_released() {
+            self.held_keys.remove(key);
+        }
+
+        let keys = &self.held_keys;
+        self.screens.last_mut().unwrap().handle_held(
+            &mut self.game,
+            Box::new(|k| {
+                if let Some(i) = keys.get(k) {
+                    *i == 0 || *i > KEY_DELAY
+                } else {
+                    false
+                }
+            }),
+        );
+
+        for i in self.held_keys.values_mut() {
+            *i += 1;
+        }
+
         if self.screens.is_empty() {
             Some(UpdateEvent::Exit)
         } else {

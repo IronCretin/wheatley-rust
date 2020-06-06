@@ -26,14 +26,13 @@ use tile::Tile;
 const SCREEN_WIDTH: u32 = 100;
 const SCREEN_HEIGHT: u32 = 45;
 
-// const LIMIT_FPS: i32 = 30;
-
 pub const PLAYER_TILE: Tile = Tile {
     ch: '@' as u16,
     fg: DARK_GREEN,
     bg: BLACK,
 };
 pub const PLAYER_FOV: i32 = 10;
+pub const KEY_DELAY: u32 = 30;
 
 fn main() {
     let mut app = App::new(AppOptions {
@@ -88,7 +87,7 @@ r#"+-------------------------------------------------------------------------+
 | |_____/|_|_| |_| |_|\__,_|_|\__,_|\__\___/|_|    |____|\___/____|\___/  |
 +-------------------------------------------------------------------------+"#),
             vec![
-                (String::from("Play!"), Action::Push(Rc::new(GameScreen))),
+                (String::from("Play!"), Action::Push(Rc::new(GameScreen::new()))),
                 (String::from("Help"), Action::Push(help.clone())),
                 (String::from("Credits"), Action::Push(Rc::new(TextBox::new(
                     Some(String::from("Credits")),
