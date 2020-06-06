@@ -64,7 +64,9 @@ impl Engine for WheatleyEngine {
                             self.screens.push(s.clone());
                         }
                         Action::Pop => {
-                            self.screens.pop().unwrap().exit(game);
+                            if !cfg!(target_arch = "wasm32") || self.screens.len() != 1 {
+                                self.screens.pop().unwrap().exit(game);
+                            }
                         }
                     }
                 }
@@ -76,16 +78,18 @@ impl Engine for WheatleyEngine {
 
         let keys = &self.held_keys;
         let key_delay = game.settings.interface.key_delay;
-        self.screens.last_mut().unwrap().handle_held(
-            game,
-            Box::new(|k| {
-                if let Some(i) = keys.get(k) {
-                    *i == 0 || *i > key_delay
-                } else {
-                    false
-                }
-            }),
-        );
+        self.screens.last_mut().map(|s| {
+            s.handle_held(
+                game,
+                Box::new(|k| {
+                    if let Some(i) = keys.get(k) {
+                        *i == 0 || *i > key_delay
+                    } else {
+                        false
+                    }
+                }),
+            )
+        });
 
         for i in self.held_keys.values_mut() {
             *i += 1;

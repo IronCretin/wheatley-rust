@@ -20,4 +20,3 @@ serde_derive = "1.0.111"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 stdweb = "0.4.20"
-closure = "0.3.0"
