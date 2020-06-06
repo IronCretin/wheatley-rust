@@ -34,7 +34,7 @@ impl Game {
             level: 0,
             floors: Vec::new(),
             basement: Vec::new(),
-            map_rng: Pcg32::seed_from_u64(seed),
+            map_rng: SeedableRng::seed_from_u64(seed),
         };
         let floor = Level::generate(200, 200, &mut game.map_rng, Hallways::new(7, 6));
         let px = Uniform::from(0..floor.width);

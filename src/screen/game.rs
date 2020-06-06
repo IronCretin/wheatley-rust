@@ -1,9 +1,7 @@
-use tcod::colors::*;
-use tcod::console::{Console, Root};
-use tcod::input::Key;
-use tcod::map::FovAlgorithm::Permissive2;
+use doryen_rs::Console;
 
-use super::{handle_default, Action, Screen};
+use super::{handle_default, Action, Key, Screen};
+use crate::colors::*;
 use crate::game::Game;
 use crate::map::tile::{Action as TAction, MapTile};
 use crate::point::Point;
@@ -12,48 +10,43 @@ use crate::PLAYER_FOV;
 pub struct GameScreen;
 
 impl Screen for GameScreen {
-    fn render(&self, game: &mut Game, display: &mut Root) {
+    fn render(&self, game: &mut Game, con: &mut Console) {
         let pos = game.player.pos;
         let level = game.cur_level_mut();
-        let offset = pos - Point(display.width(), display.height()) / 2;
-        for x in 0..display.width() {
-            for y in 0..display.height() {
+        let (w, h) = (con.get_width() as i32, con.get_height() as i32);
+        let offset = pos - Point(w, h) / 2;
+        for x in 0..w {
+            for y in 0..h {
                 let p = Point(x, y) + offset;
                 if 0 <= p.0 && p.0 < level.width && 0 <= p.1 && p.1 < level.height {
-                    if level.map.is_in_fov(p.0, p.1) {
+                    if level.is_in_fov(p.0, p.1) {
                         level.seen[[p.0 as usize, p.1 as usize]] = true;
-                        level.get(p.0, p.1).draw(Point(x, y), display);
+                        level.get(p.0, p.1).draw(Point(x, y), con);
                     } else if level.seen[[p.0 as usize, p.1 as usize]] {
-                        display.put_char_ex(x, y, level.get(p.0, p.1).ch, DARK_GREY, BLACK);
+                        con.cell(
+                            x,
+                            y,
+                            Some(level.get(p.0, p.1).ch),
+                            Some(DARK_GREY),
+                            Some(BLACK),
+                        );
                     }
                 }
             }
         }
-        game.player.draw(game.player.pos - offset, display);
+        game.player.draw(game.player.pos - offset, con);
     }
     fn handle(&self, game: &mut Game, key: Key) -> Action {
-        use super::KeyCode::*;
         let mut pos = game.player.pos;
+        let l = game.cur_level_mut();
         match key {
-            Key { printable: 'y', .. } | Key { code: NumPad7, .. } => pos += Point(-1, -1),
-            Key { printable: 'k', .. } | Key { code: NumPad8, .. } | Key { code: Up, .. } => {
-                pos += Point(0, -1)
-            }
-            Key { printable: 'u', .. } | Key { code: NumPad9, .. } => pos += Point(1, -1),
-            Key { printable: 'h', .. } | Key { code: NumPad4, .. } | Key { code: Left, .. } => {
-                pos += Point(-1, 0)
-            }
-            Key { printable: 'l', .. } | Key { code: NumPad6, .. } | Key { code: Right, .. } => {
-                pos += Point(1, 0)
-            }
-            Key { printable: 'b', .. } | Key { code: NumPad1, .. } => pos += Point(-1, 1),
-            Key { printable: 'j', .. } | Key { code: NumPad2, .. } | Key { code: Down, .. } => {
-                pos += Point(0, 1)
-            }
-            Key { printable: 'n', .. } | Key { code: NumPad3, .. } => pos += Point(1, 1),
-            Key { printable: 'x', .. } => println!("{:?}", pos),
-            Key { printable: 'c', .. } => {
-                let l = game.cur_level_mut();
+            Key { key: "KeyX", .. } => println!(
+                "{}, {}: {}",
+                pos.0,
+                pos.1,
+                l.fov_data.is_transparent(pos.0 as usize, pos.1 as usize)
+            ),
+            Key { key: "KeyC", .. } => {
                 for x in -1..=1 {
                     for y in -1..=1 {
                         if x != 0 || y != 0 {
@@ -82,7 +75,6 @@ impl Screen for GameScreen {
             }
             _ => return handle_default(game, key),
         }
-        let l = game.cur_level_mut();
         let mut tick = false;
         if 0 <= pos.0 && pos.0 < l.width && 0 <= pos.1 && pos.1 < l.height {
             let tile = l.get(pos.0, pos.1);
@@ -106,16 +98,58 @@ impl Screen for GameScreen {
             }
         }
         if tick {
-            game.cur_level_mut()
-                .map
-                .compute_fov(pos.0, pos.1, PLAYER_FOV, true, Permissive2);
+            game.cur_level_mut().compute_fov(pos.0, pos.1, PLAYER_FOV);
         }
         Action::Keep
     }
+    fn handle_held<'a>(&self, game: &mut Game, held: Box<dyn Fn(&str) -> bool + 'a>) {
+        let mut pos = game.player.pos;
+        let l = game.cur_level_mut();
+        if held("KeyY") || held("Numpad7") {
+            pos += Point(-1, -1)
+        } else if held("KeyK") || held("Numpad8") || held("ArrowUp") {
+            pos += Point(0, -1)
+        } else if held("KeyU") || held("Numpad9") {
+            pos += Point(1, -1)
+        } else if held("KeyH") || held("Numpad4") || held("ArrowLeft") {
+            pos += Point(-1, 0)
+        } else if held("KeyL") || held("Numpad6") || held("ArrowRight") {
+            pos += Point(1, 0)
+        } else if held("KeyB") || held("Numpad1") {
+            pos += Point(-1, 1)
+        } else if held("KeyJ") || held("Numpad2") || held("ArrowDown") {
+            pos += Point(0, 1)
+        } else if held("KeyN") || held("Numpad3") {
+            pos += Point(1, 1)
+        }
+        let mut tick = false;
+        if 0 <= pos.0 && pos.0 < l.width && 0 <= pos.1 && pos.1 < l.height {
+            let tile = l.get(pos.0, pos.1);
+            if tile.walkable {
+                game.player.pos = pos;
+                tick = true
+            } else if let TAction::Open(otile, otransparent, owalkable) = tile.action {
+                let ctile = tile.clone();
+                l.set(
+                    pos.0,
+                    pos.1,
+                    MapTile {
+                        tile: otile,
+                        transparent: otransparent,
+                        walkable: owalkable,
+                        action: TAction::Close(ctile.tile, ctile.transparent, ctile.walkable),
+                    },
+                );
+                pos = game.player.pos;
+                tick = true
+            }
+        }
+        if tick {
+            game.cur_level_mut().compute_fov(pos.0, pos.1, PLAYER_FOV);
+        }
+    }
     fn enter(&self, game: &mut Game) {
         let pos = game.player.pos;
-        game.cur_level_mut()
-            .map
-            .compute_fov(pos.0, pos.1, PLAYER_FOV, true, Permissive2);
+        game.cur_level_mut().compute_fov(pos.0, pos.1, PLAYER_FOV);
     }
 }

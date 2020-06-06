@@ -1,7 +1,6 @@
 use std::ops::Deref;
 
-use tcod::colors::*;
-
+use crate::colors::*;
 use crate::tile::Tile;
 
 #[derive(Clone, Debug)]
@@ -29,7 +28,7 @@ impl Deref for MapTile {
 
 pub const WALL: MapTile = MapTile {
     tile: Tile {
-        ch: '#',
+        ch: '#' as u16,
         fg: WHITE,
         bg: BLACK,
     },
@@ -39,7 +38,7 @@ pub const WALL: MapTile = MapTile {
 };
 pub const FLOOR: MapTile = MapTile {
     tile: Tile {
-        ch: '.',
+        ch: '.' as u16,
         fg: LIGHT_GREY,
         bg: BLACK,
     },
@@ -49,7 +48,7 @@ pub const FLOOR: MapTile = MapTile {
 };
 pub const DOOR: MapTile = MapTile {
     tile: Tile {
-        ch: '+',
+        ch: '+' as u16,
         fg: BRASS,
         bg: BLACK,
     },
@@ -57,7 +56,7 @@ pub const DOOR: MapTile = MapTile {
     walkable: false,
     action: Action::Open(
         Tile {
-            ch: '\'',
+            ch: '\'' as u16,
             fg: BRASS,
             bg: BLACK,
         },

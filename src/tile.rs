@@ -1,16 +1,15 @@
-use tcod::colors::Color;
-use tcod::console::{Console, Root};
+use doryen_rs::{Color, Console};
 
 use crate::point::Point;
 
 #[derive(Copy, Clone, Debug)]
 pub struct Tile {
-    pub ch: char,
+    pub ch: u16,
     pub fg: Color,
     pub bg: Color,
 }
 impl Tile {
-    pub fn draw(&self, p: Point, display: &mut Root) {
-        display.put_char_ex(p.0, p.1, self.ch, self.fg, self.bg)
+    pub fn draw(&self, p: Point, con: &mut Console) {
+        con.cell(p.0, p.1, Some(self.ch), Some(self.fg), Some(self.bg))
     }
 }
