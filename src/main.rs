@@ -3,10 +3,11 @@ use std::env;
 use std::hash::Hasher;
 use std::rc::Rc;
 
+use rand::random;
+
 use doryen_rs::{App, AppOptions};
 
 pub mod game;
-use game::Game;
 
 pub mod screen;
 use screen::game::GameScreen;
@@ -31,8 +32,6 @@ pub const PLAYER_TILE: Tile = Tile {
     fg: DARK_GREEN,
     bg: BLACK,
 };
-pub const PLAYER_FOV: i32 = 10;
-pub const KEY_DELAY: u32 = 30;
 
 fn main() {
     let mut app = App::new(AppOptions {
@@ -42,17 +41,16 @@ fn main() {
         screen_height: SCREEN_HEIGHT * 12,
         window_title: "Wheatley Simulator".to_owned(),
         font_path: "curses_vector_8x12.png".to_owned(),
-        vsync: false,
+        resizable: true,
         ..AppOptions::default()
     });
 
-    //     tcod::system::set_fps(LIMIT_FPS);
-
     let mut hasher = DefaultHasher::new();
-
-    env::args().nth(1).map(|s| hasher.write(s.as_bytes()));
-
-    let seed: u64 = hasher.finish();
+    let seed: u64 = if let Some(_) = env::args().nth(1).map(|s| hasher.write(s.as_bytes())) {
+        hasher.finish()
+    } else {
+        random()
+    };
 
     let help = Rc::new(TextBox::new(
         Some(String::from("Help")),
@@ -69,7 +67,7 @@ You can also use numpad or vi-keys:
         true,
     ));
 
-    let game = Game::new(Rc::new(MenuScreen::new(String::from(
+    let engine = WheatleyEngine::new(Rc::new(MenuScreen::new(String::from(
 r#"+-------------------------------------------------------------------------+
 |           __          ___                _   _                          |
 |           \ \        / / |              | | | |                         |
@@ -98,9 +96,7 @@ r#"+-------------------------------------------------------------------------+
             ]
         )), help, seed);
 
-    let screens = WheatleyEngine::new(game);
-
-    app.set_engine(Box::new(screens));
+    app.set_engine(Box::new(engine));
 
     app.run();
 }

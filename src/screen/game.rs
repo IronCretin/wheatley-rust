@@ -5,7 +5,6 @@ use crate::colors::*;
 use crate::game::Game;
 use crate::map::tile::{Action as TAction, MapTile};
 use crate::point::Point;
-use crate::PLAYER_FOV;
 
 pub struct GameScreen;
 
@@ -39,7 +38,8 @@ impl GameScreen {
             }
         }
         if tick {
-            game.cur_level_mut().compute_fov(pos.0, pos.1, PLAYER_FOV);
+            let fov = game.settings.player.fov;
+            game.cur_level_mut().compute_fov(pos.0, pos.1, fov);
         }
     }
 }
@@ -130,6 +130,7 @@ impl Screen for GameScreen {
     }
     fn enter(&self, game: &mut Game) {
         let pos = game.player.pos;
-        game.cur_level_mut().compute_fov(pos.0, pos.1, PLAYER_FOV);
+        let fov = game.settings.player.fov;
+        game.cur_level_mut().compute_fov(pos.0, pos.1, fov);
     }
 }

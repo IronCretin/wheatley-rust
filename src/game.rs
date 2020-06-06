@@ -4,6 +4,8 @@ use rand::distributions::{Distribution, Uniform};
 use rand::SeedableRng;
 use rand_pcg::Pcg32;
 
+use serde_derive::Deserialize;
+
 use crate::map::{gen::Hallways, Level};
 use crate::player::Player;
 use crate::point::Point;
@@ -11,6 +13,7 @@ use crate::screen::Screen;
 use crate::PLAYER_TILE;
 
 pub struct Game {
+    pub settings: GameSettings,
     pub menu: Rc<dyn Screen>,
     pub help: Rc<dyn Screen>,
     pub player: Player,
@@ -23,8 +26,14 @@ pub struct Game {
 const MAX_ATTEMPTS: i32 = 100;
 
 impl Game {
-    pub fn new(menu: Rc<dyn Screen>, help: Rc<dyn Screen>, seed: u64) -> Game {
+    pub fn new(
+        settings: GameSettings,
+        menu: Rc<dyn Screen>,
+        help: Rc<dyn Screen>,
+        seed: u64,
+    ) -> Game {
         let mut game = Game {
+            settings,
             menu,
             help,
             player: Player {
@@ -64,4 +73,26 @@ impl Game {
             &mut self.floors[self.level as usize]
         }
     }
+}
+
+#[derive(Deserialize)]
+pub struct GameSettings {
+    pub interface: InterfaceSettings,
+    pub player: PlayerSettings,
+    pub map: MapSettings,
+}
+#[derive(Deserialize)]
+pub struct InterfaceSettings {
+    pub width: u32,
+    pub height: u32,
+    pub font: String,
+    pub key_delay: u32,
+}
+#[derive(Deserialize)]
+pub struct PlayerSettings {
+    pub fov: i32,
+}
+#[derive(Deserialize)]
+pub struct MapSettings {
+    pub place_attempts: i32,
 }
