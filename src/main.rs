@@ -53,7 +53,8 @@ fn main() {
 
     load(
         "settings.toml",
-        Box::new(|settings| {
+        "map.toml",
+        Box::new(|settings, map_info| {
             let mut app = App::new(AppOptions {
                 console_width: settings.interface.width,
                 console_height: settings.interface.height,
@@ -88,7 +89,9 @@ fn main() {
                 true,
             ));
 
-            let engine = WheatleyEngine::new(Game::new(settings, Rc::new(MenuScreen::new(String::from(
+            let engine = WheatleyEngine::new(Game::new(
+                settings, map_info,
+                Rc::new(MenuScreen::new(String::from(
 r#"+-------------------------------------------------------------------------+
 |           __          ___                _   _                          |
 |           \ \        / / |              | | | |                         |

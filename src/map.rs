@@ -1,12 +1,12 @@
 use doryen_fov::{FovAlgorithm, FovRestrictive, MapData};
 use ndarray::{Array, Array2};
-use rand::Rng;
 
 pub mod gen;
 pub mod tile;
 
+use crate::Game;
 use gen::Generator;
-use tile::{MapTile, DEFAULT_TILE};
+use tile::MapTile;
 
 pub struct Level {
     pub width: i32,
@@ -17,13 +17,12 @@ pub struct Level {
 }
 
 impl Level {
-    pub fn generate<T: Generator, R: Rng>(width: i32, height: i32, rng: &mut R, gen: T) -> Level {
-        let mut l = Level::new(width, height);
-        gen.generate(rng, &mut l);
+    pub fn generate<T: Generator>(width: i32, height: i32, game: &mut Game, gen: T) -> Level {
+        let mut l = Level::new(width, height, &game.map.tiles["wall"]);
+        gen.generate(game, &mut l);
         l
     }
-    fn new(width: i32, height: i32) -> Level {
-        let tile = DEFAULT_TILE;
+    fn new(width: i32, height: i32, tile: &MapTile) -> Level {
         let mut fov_data = MapData::new(width as usize, height as usize);
         for x in 0..width as usize {
             for y in 0..width as usize {
@@ -34,7 +33,7 @@ impl Level {
             width,
             height,
             fov_data,
-            tiles: Array::from_elem((width as usize, height as usize), tile),
+            tiles: Array::from_elem((width as usize, height as usize), tile.clone()),
             seen: Array::from_elem((width as usize, height as usize), false),
         }
     }

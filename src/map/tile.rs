@@ -1,22 +1,19 @@
 use std::ops::Deref;
 
-use crate::colors::*;
+use serde_derive::Deserialize;
+
 use crate::tile::Tile;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct MapTile {
+    #[serde(flatten)]
     pub tile: Tile,
+
     pub transparent: bool,
     pub walkable: bool,
-    pub action: Action,
-}
-
-#[derive(Clone, Debug)]
-pub enum Action {
-    Open(Tile, bool, bool),
-    Close(Tile, bool, bool),
-    CloseFlip,
-    None,
+    pub open: Option<String>,
+    pub close: Option<String>,
+    pub flip: Option<String>,
 }
 
 impl Deref for MapTile {
@@ -25,44 +22,3 @@ impl Deref for MapTile {
         &self.tile
     }
 }
-
-pub const WALL: MapTile = MapTile {
-    tile: Tile {
-        ch: '#' as u16,
-        fg: WHITE,
-        bg: BLACK,
-    },
-    transparent: false,
-    walkable: false,
-    action: Action::None,
-};
-pub const FLOOR: MapTile = MapTile {
-    tile: Tile {
-        ch: '.' as u16,
-        fg: LIGHT_GREY,
-        bg: BLACK,
-    },
-    transparent: true,
-    walkable: true,
-    action: Action::None,
-};
-pub const DOOR: MapTile = MapTile {
-    tile: Tile {
-        ch: '+' as u16,
-        fg: BRASS,
-        bg: BLACK,
-    },
-    transparent: false,
-    walkable: false,
-    action: Action::Open(
-        Tile {
-            ch: '\'' as u16,
-            fg: BRASS,
-            bg: BLACK,
-        },
-        true,
-        true,
-    ),
-};
-
-pub const DEFAULT_TILE: MapTile = WALL;

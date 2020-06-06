@@ -1,7 +1,7 @@
 [interface]
 width = 100
 height = 45
-key_delay = 30
+key_delay = 25
 
 [interface.font]
 font = "curses_vector_8x12.png"
@@ -13,3 +13,6 @@ fov = 10
 
 [map]
 place_attempts = 100
+width = 200
+height = 200
+num_monsters = 50

@@ -3,7 +3,6 @@ use doryen_rs::Console;
 use super::{handle_default, Action, Key, Screen};
 use crate::colors::*;
 use crate::game::Game;
-use crate::map::tile::{Action as TAction, MapTile};
 use crate::point::Point;
 
 pub struct GameScreen;
@@ -12,42 +11,12 @@ impl GameScreen {
     pub fn new() -> GameScreen {
         GameScreen {}
     }
-    fn player_move(&self, game: &mut Game, dpos: Point) {
-        let mut pos = game.player.pos + dpos;
-        let l = game.cur_level_mut();
-        let mut tick = false;
-        if 0 <= pos.0 && pos.0 < l.width && 0 <= pos.1 && pos.1 < l.height {
-            let tile = l.get(pos.0, pos.1);
-            if tile.walkable {
-                game.player.pos = pos;
-                tick = true
-            } else if let TAction::Open(otile, otransparent, owalkable) = tile.action {
-                let ctile = tile.clone();
-                l.set(
-                    pos.0,
-                    pos.1,
-                    MapTile {
-                        tile: otile,
-                        transparent: otransparent,
-                        walkable: owalkable,
-                        action: TAction::Close(ctile.tile, ctile.transparent, ctile.walkable),
-                    },
-                );
-                pos = game.player.pos;
-                tick = true
-            }
-        }
-        if tick {
-            let fov = game.settings.player.fov;
-            game.cur_level_mut().compute_fov(pos.0, pos.1, fov);
-        }
-    }
 }
 
 impl Screen for GameScreen {
     fn render(&self, game: &mut Game, con: &mut Console) {
         let pos = game.player.pos;
-        let level = game.cur_level_mut();
+        let level = game.levels.cur_mut();
         let (w, h) = (con.get_width() as i32, con.get_height() as i32);
         let offset = pos - Point(w, h) / 2;
         for x in 0..w {
@@ -73,30 +42,16 @@ impl Screen for GameScreen {
     }
     fn handle(&self, game: &mut Game, key: Key) -> Action {
         let pos = game.player.pos;
-        let l = game.cur_level_mut();
+        let l = game.levels.cur_mut();
         match key {
             Key { key: "KeyC", .. } => {
                 for x in -1..=1 {
                     for y in -1..=1 {
                         if x != 0 || y != 0 {
                             let p = pos + Point(x, y);
-                            let tile = l.get(p.0, p.1);
-                            if let TAction::Close(ctile, ctransparent, cwalkable) = tile.action {
-                                let otile = tile.clone();
-                                l.set(
-                                    p.0,
-                                    p.1,
-                                    MapTile {
-                                        tile: ctile,
-                                        transparent: ctransparent,
-                                        walkable: cwalkable,
-                                        action: TAction::Open(
-                                            otile.tile,
-                                            otile.transparent,
-                                            otile.walkable,
-                                        ),
-                                    },
-                                );
+                            if let Some(cname) = &l.get(p.0, p.1).close {
+                                let ctile = game.map.tiles[cname].clone();
+                                l.set(p.0, p.1, ctile);
                             }
                         }
                     }
@@ -126,11 +81,36 @@ impl Screen for GameScreen {
         } else {
             Point(0, 0)
         };
-        self.player_move(game, dpos);
+        player_move(game, dpos);
     }
     fn enter(&self, game: &mut Game) {
         let pos = game.player.pos;
         let fov = game.settings.player.fov;
-        game.cur_level_mut().compute_fov(pos.0, pos.1, fov);
+        game.levels.cur_mut().compute_fov(pos.0, pos.1, fov);
+    }
+}
+
+fn player_move(game: &mut Game, dpos: Point) {
+    let mut pos = game.player.pos + dpos;
+    let l = game.levels.cur_mut();
+    let tick = if 0 <= pos.0 && pos.0 < l.width && 0 <= pos.1 && pos.1 < l.height {
+        let tile = l.get(pos.0, pos.1);
+        if tile.walkable {
+            game.player.pos = pos;
+            true
+        } else if let Some(oname) = &tile.open {
+            let otile = game.map.tiles[oname].clone();
+            l.set(pos.0, pos.1, otile);
+            pos = game.player.pos;
+            true
+        } else {
+            false
+        }
+    } else {
+        false
+    };
+    if tick {
+        let fov = game.settings.player.fov;
+        l.compute_fov(pos.0, pos.1, fov);
     }
 }
