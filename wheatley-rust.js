@@ -576,6 +576,9 @@ Module.STDWEB_PRIVATE.acquire_tmp = function( dummy ) {
             "__cargo_web_snippet_0f503de1d61309643e0e13a7871406891e3691c9": function($0) {
                 Module.STDWEB_PRIVATE.from_js($0, (function(){return window;})());
             },
+            "__cargo_web_snippet_199d5eb25dfe761687bcd487578eb7e636bd9650": function($0) {
+                $0 = Module.STDWEB_PRIVATE.to_js($0);console.log(($0));
+            },
             "__cargo_web_snippet_213e295793ef2f18e73787d93e4f3fc909935143": function($0, $1, $2, $3, $4) {
                 $0 = Module.STDWEB_PRIVATE.to_js($0);$1 = Module.STDWEB_PRIVATE.to_js($1);$2 = Module.STDWEB_PRIVATE.to_js($2);$3 = Module.STDWEB_PRIVATE.to_js($3);$4 = Module.STDWEB_PRIVATE.to_js($4);var p=($0).concat(($1));var ctx=Module.gl.get(($2));var internal_fmt=($3);var fmt=internal_fmt;if(($4)){internal_fmt=ctx.DEPTH_COMPONENT16;}ctx.texImage2D(p[0],p[1],internal_fmt,p[3],p[4],0,fmt,p[6],null);
             },
@@ -615,6 +618,9 @@ Module.STDWEB_PRIVATE.acquire_tmp = function( dummy ) {
             "__cargo_web_snippet_3d3bcb1bb15693388a61d29f7ba643701fb617f3": function($0, $1, $2, $3) {
                 $0 = Module.STDWEB_PRIVATE.to_js($0);$1 = Module.STDWEB_PRIVATE.to_js($1);$2 = Module.STDWEB_PRIVATE.to_js($2);$3 = Module.STDWEB_PRIVATE.to_js($3);var p=[($0),($1)];var ctx=Module.gl.get(($2));var loc=Module.gl.get(($3));ctx.uniform2f(loc,p[0],p[1])
             },
+            "__cargo_web_snippet_4362a6a8b0e3e0c4ecd3d0e28d3a49a7a0bffde2": function($0, $1) {
+                $0 = Module.STDWEB_PRIVATE.to_js($0);$1 = Module.STDWEB_PRIVATE.to_js($1);let handle=($0);let xhr=new XMLHttpRequest();xhr.addEventListener("load",()=>{handle(xhr.responseText);handle.drop();});xhr.open("GET",($1));xhr.send();
+            },
             "__cargo_web_snippet_45571de900b0c8f647a8073289adcbdde6025d7d": function($0, $1) {
                 $0 = Module.STDWEB_PRIVATE.to_js($0);$1 = Module.STDWEB_PRIVATE.to_js($1);var ctx=Module.gl.get(($0));var shader=Module.gl.get(($1));ctx.compileShader(shader);var compiled=ctx.getShaderParameter(shader,0x8B81);if(! compiled){console.log("ERROR in shader compilation:");console.log(ctx.getShaderInfoLog(shader));}
             },
@@ -626,6 +632,9 @@ Module.STDWEB_PRIVATE.acquire_tmp = function( dummy ) {
             },
             "__cargo_web_snippet_4e06a3790bf7c5d71cb31866f13dedbc663b75c5": function($0, $1, $2, $3) {
                 $1 = Module.STDWEB_PRIVATE.to_js($1);$2 = Module.STDWEB_PRIVATE.to_js($2);$3 = Module.STDWEB_PRIVATE.to_js($3);Module.STDWEB_PRIVATE.from_js($0, (function(){return[($1),($2),($3)]})());
+            },
+            "__cargo_web_snippet_4fd31c9e56d40b8642cf9e6f96fd6b570f355cea": function($0) {
+                $0 = Module.STDWEB_PRIVATE.to_js($0);console.error(($0));
             },
             "__cargo_web_snippet_500542edb621019a5dcfa85a6ec3dff648fab4d4": function($0, $1) {
                 $0 = Module.STDWEB_PRIVATE.to_js($0);$1 = Module.STDWEB_PRIVATE.to_js($1);var ctx=Module.gl.get(($0));var p=($1);ctx.viewport(p[0],p[1],p[2],p[3]);
