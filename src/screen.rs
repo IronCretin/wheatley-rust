@@ -34,6 +34,8 @@ impl Engine for WheatleyEngine {
     fn update(&mut self, api: &mut dyn DoryenApi) -> Option<UpdateEvent> {
         let input = api.input();
 
+        self.screens.last_mut().unwrap().handle_held(&mut self.game, Box::new(|k| input.key(k)));
+
         for key in input.keys_pressed() {
             match key {
                 "ControlLeft" | "AltLeft" | "ShiftLeft" | "ShiftRight" => {}
@@ -111,6 +113,7 @@ pub trait Screen {
     fn handle(&self, game: &mut Game, key: Key) -> Action {
         handle_default(game, key)
     }
+    fn handle_held<'a>(&self, _game: &mut Game, _held: Box<dyn Fn (&str) -> bool + 'a>) {}
     fn transparent(&self) -> bool {
         false
     }
