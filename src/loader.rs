@@ -23,20 +23,43 @@ pub fn load(
 }
 
 #[cfg(target_arch = "wasm32")]
-pub fn load(settings_path: &str, callback: Box<dyn Fn(GameSettings) -> ()>) {
-    let handle = move |text: String| {
-        callback(toml::from_str(&text).expect("Could not parse settings"));
+pub fn load(
+    settings_path: &str,
+    map_path: &str,
+    callback: Box<dyn Fn(GameSettings, MapInfo) -> ()>,
+) {
+    let handle = move |s_text: String, m_text: String| {
+        callback(
+            toml::from_str(&s_text).expect("Could not parse settings"),
+            toml::from_str(&m_text).expect("Could not parse map data"),
+        );
     };
     js! {
         let handle = @{handle};
-        let xhr = new XMLHttpRequest();
 
-        xhr.addEventListener("load", () => {
-            handle(xhr.responseText);
-            handle.drop();
+        let settings = undefined;
+        let rsettings = new XMLHttpRequest();
+        rsettings.open("GET", @{settings_path});
+        rsettings.addEventListener("load", () => {
+            settings = rsettings.responseText;
+            if (map) {
+                handle(settings, map);
+                handle.drop();
+            }
         });
 
-        xhr.open("GET", @{settings_path});
-        xhr.send();
+        let map = undefined;
+        let rmap = new XMLHttpRequest();
+        rmap.open("GET", @{map_path});
+        rmap.addEventListener("load", () => {
+            map = rmap.responseText;
+            if (settings) {
+                handle(settings, map);
+                handle.drop();
+            }
+        });
+
+        rsettings.send();
+        rmap.send();
     }
 }

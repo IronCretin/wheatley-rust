@@ -36,6 +36,7 @@ impl Engine for WheatleyEngine {
         let game = &mut self.game;
         let input = api.input();
 
+        let mut clear = false;
         for key in input.keys_pressed() {
             if !self.held_keys.contains_key(key) {
                 self.held_keys.insert(key.to_owned(), 0);
@@ -57,22 +58,29 @@ impl Engine for WheatleyEngine {
                         Action::Push(s) => {
                             s.enter(game);
                             self.screens.push(s.clone());
+                            clear = true;
                         }
                         Action::Replace(s) => {
                             self.screens.pop().unwrap().exit(game);
                             s.enter(game);
                             self.screens.push(s.clone());
+                            clear = true;
                         }
                         Action::Pop => {
                             if !cfg!(target_arch = "wasm32") || self.screens.len() != 1 {
                                 self.screens.pop().unwrap().exit(game);
+                                clear = true;
                             }
                         }
                     }
                 }
             }
         }
-        for key in input.keys_released() {
+        if clear {
+            api.con().clear(Some((255,255,255,255)), Some((0,0,0,255)), Some(' ' as u16));
+        }
+        
+        for key in api.input().keys_released() {
             self.held_keys.remove(key);
         }
 
