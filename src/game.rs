@@ -75,24 +75,30 @@ impl Game {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct GameSettings {
     pub interface: InterfaceSettings,
     pub player: PlayerSettings,
     pub map: MapSettings,
 }
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct InterfaceSettings {
     pub width: u32,
     pub height: u32,
-    pub font: String,
+    pub font: FontSettings,
     pub key_delay: u32,
 }
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
+pub struct FontSettings {
+    pub font: String,
+    pub width: u32,
+    pub height: u32,
+}
+#[derive(Debug, Deserialize, Clone)]
 pub struct PlayerSettings {
     pub fov: i32,
 }
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct MapSettings {
     pub place_attempts: i32,
 }

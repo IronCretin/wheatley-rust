@@ -1,8 +1,12 @@
 [interface]
 width = 100
 height = 45
-font = "curses_vector_8x12.png"
 key_delay = 30
+
+[interface.font]
+font = "curses_vector_8x12.png"
+width = 8
+height = 12
 
 [player]
 fov = 10
