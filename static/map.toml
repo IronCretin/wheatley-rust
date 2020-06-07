@@ -21,7 +21,7 @@ walkable = false
 open = 'open_door'
 
 [tiles.open_door]
-ch = '-'
+ch = "'"
 fg = [191, 151, 96, 255]
 bg = [0, 0, 0, 255]
 transparent = true

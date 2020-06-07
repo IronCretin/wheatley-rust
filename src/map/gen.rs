@@ -3,8 +3,8 @@ use rand::Rng;
 use crate::map::Level;
 use crate::Game;
 
-// pub mod hallways;
-// pub use hallways::Hallways;
+pub mod hallways;
+pub use hallways::Hallways;
 
 pub trait Generator {
     fn generate(&self, game: &mut Game, level: &mut Level);

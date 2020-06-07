@@ -1,3 +1,5 @@
+use std::borrow::Borrow;
+
 use doryen_rs::Console;
 
 use super::{handle_default, Action, Key, Screen};
@@ -50,7 +52,7 @@ impl Screen for GameScreen {
                         if x != 0 || y != 0 {
                             let p = pos + Point(x, y);
                             if let Some(cname) = &l.get(p.0, p.1).close {
-                                let ctile = game.map.tiles[cname].clone();
+                                let ctile = game.map.tiles[Borrow::<String>::borrow(cname)].clone();
                                 l.set(p.0, p.1, ctile);
                             }
                         }
@@ -99,7 +101,7 @@ fn player_move(game: &mut Game, dpos: Point) {
             game.player.pos = pos;
             true
         } else if let Some(oname) = &tile.open {
-            let otile = game.map.tiles[oname].clone();
+            let otile = game.map.tiles[Borrow::<String>::borrow(oname)].clone();
             l.set(pos.0, pos.1, otile);
             pos = game.player.pos;
             true

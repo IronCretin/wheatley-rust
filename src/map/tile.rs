@@ -1,4 +1,5 @@
 use std::ops::Deref;
+use std::rc::Rc;
 
 use serde_derive::Deserialize;
 
@@ -11,9 +12,9 @@ pub struct MapTile {
 
     pub transparent: bool,
     pub walkable: bool,
-    pub open: Option<String>,
-    pub close: Option<String>,
-    pub flip: Option<String>,
+    pub open: Option<Rc<String>>,
+    pub close: Option<Rc<String>>,
+    pub flip: Option<Rc<String>>,
 }
 
 impl Deref for MapTile {

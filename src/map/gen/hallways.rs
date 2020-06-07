@@ -3,7 +3,7 @@ use rand::Rng;
 use rand_distr::{Distribution, Triangular, Uniform};
 
 use super::Generator;
-use crate::map::tile::*;
+use crate::Game;
 use crate::map::Level;
 
 pub struct Hallways {
@@ -17,22 +17,22 @@ impl Hallways {
 }
 
 impl Generator for Hallways {
-    fn generate<R: Rng>(&self, rng: &mut R, level: &mut Level) {
+    fn generate(&self, game: &mut Game, level: &mut Level) {
         create(
             level,
             self.depth,
             self.minr,
-            rng.gen(),
+            game.map_rng.gen(),
             1,
             level.width - 1,
             1,
             level.height - 1,
-            rng,
+            game,
         );
     }
 }
 
-fn create<R: Rng>(
+fn create(
     level: &mut Level,
     depth: i32,
     minr: i32,
@@ -41,8 +41,12 @@ fn create<R: Rng>(
     mut x1: i32,
     mut y0: i32,
     mut y1: i32,
-    rng: &mut R,
+    game: &mut Game,
 ) {
+    let rng = &mut game.map_rng;
+    let door = &game.map.tiles["door"];
+    let floor = &game.map.tiles["floor"];
+
     let hw = depth / 2 + 1;
     if x0 + 1 + minr > x1 - hw - minr || y0 + 1 + minr > y1 - hw - minr {
         return;
@@ -58,16 +62,16 @@ fn create<R: Rng>(
             let (doors1, doors2): (bool, bool) = rng.gen();
 
             for i in 0..hw {
-                level.set(x + i, y0 - 1, if doors1 { DOOR } else { FLOOR });
-                level.set(x + i, y1, if doors2 { DOOR } else { FLOOR });
+                level.set(x + i, y0 - 1, if doors1 { door.clone() } else { floor.clone() });
+                level.set(x + i, y1, if doors2 { door.clone() } else { floor.clone() });
             }
             for y in y0..y1 {
                 for j in 0..hw {
-                    level.set(x + j, y, FLOOR);
+                    level.set(x + j, y, floor.clone());
                 }
             }
-            create(level, depth - 1, minr, !xaxis, x0, x - 1, y0, y1, rng);
-            create(level, depth - 1, minr, !xaxis, x + hw + 1, x1, y0, y1, rng);
+            create(level, depth - 1, minr, !xaxis, x0, x - 1, y0, y1, game);
+            create(level, depth - 1, minr, !xaxis, x + hw + 1, x1, y0, y1, game);
         } else {
             // y axis
             let (ymin, ymax) = ((y0 + 1 + minr) as f64, (y1 - hw - minr) as f64);
@@ -77,16 +81,16 @@ fn create<R: Rng>(
             let (doors1, doors2): (bool, bool) = rng.gen();
 
             for i in 0..hw {
-                level.set(x0 - 1, y + i, if doors1 { DOOR } else { FLOOR });
-                level.set(x1, y + i, if doors2 { DOOR } else { FLOOR });
+                level.set(x0 - 1, y + i, if doors1 { door.clone() } else { floor.clone() });
+                level.set(x1, y + i, if doors2 { door.clone() } else { floor.clone() });
             }
             for x in x0..x1 {
                 for j in 0..hw {
-                    level.set(x, y + j, FLOOR);
+                    level.set(x, y + j, floor.clone());
                 }
             }
-            create(level, depth - 1, minr, !xaxis, x0, x1, y0, y - 1, rng);
-            create(level, depth - 1, minr, !xaxis, x0, x1, y + hw + 1, y1, rng);
+            create(level, depth - 1, minr, !xaxis, x0, x1, y0, y - 1, game);
+            create(level, depth - 1, minr, !xaxis, x0, x1, y + hw + 1, y1, game);
         }
     } else {
         // rooms
@@ -113,7 +117,7 @@ fn create<R: Rng>(
                                 x1 - x,
                                 minr,
                                 y1 - y0,
-                                rng,
+                                game,
                             );
                             x += w + 1;
                             if h > height {
@@ -138,7 +142,7 @@ fn create<R: Rng>(
                                 x1 - x,
                                 minr,
                                 y1 - y0,
-                                rng,
+                                game,
                             );
                             x += w + 1;
                             if h > height {
@@ -163,7 +167,7 @@ fn create<R: Rng>(
                                 y1 - y,
                                 minr,
                                 x1 - x0,
-                                rng,
+                                game,
                             );
                             y += w + 1;
                             if h > height {
@@ -188,7 +192,7 @@ fn create<R: Rng>(
                                 y1 - y,
                                 minr,
                                 x1 - x0,
-                                rng,
+                                game,
                             );
                             y += w + 1;
                             if h > height {
@@ -202,7 +206,7 @@ fn create<R: Rng>(
         }
     }
 }
-fn create_room<R: Rng>(
+fn create_room(
     level: &mut Level,
     x0: i32,
     y0: i32,
@@ -212,8 +216,13 @@ fn create_room<R: Rng>(
     xmax: i32,
     ymin: i32,
     ymax: i32,
-    rng: &mut R,
+    game: &mut Game,
 ) -> (i32, i32) {
+    let rng = &mut game.map_rng;
+    let door = &game.map.tiles["door"];
+    let floor = &game.map.tiles["floor"];
+
+
     let mut place = |x: i32, y: i32, t| {
         if x0 + x * dx.0 + y * dy.0 < 0 || y0 + x * dx.1 + y * dy.1 < 0 {
             println!(
@@ -234,11 +243,11 @@ fn create_room<R: Rng>(
     let h = if ymin > ymax / 2 { ymax } else { ymin };
     for x in 0..w {
         for y in 0..h {
-            place(x, y, FLOOR);
+            place(x, y, floor.clone());
         }
     }
     let dx = *[0, w - 1].choose(rng).unwrap();
-    place(dx, -1, DOOR);
+    place(dx, -1, door.clone());
     (w, h)
 }
 

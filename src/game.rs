@@ -6,7 +6,7 @@ use rand::SeedableRng;
 use rand_pcg::Pcg32;
 use serde::Deserialize;
 
-use crate::map::{gen::Empty, tile::MapTile, Level};
+use crate::map::{gen::Hallways, tile::MapTile, Level};
 use crate::player::Player;
 use crate::point::Point;
 use crate::screen::Screen;
@@ -50,7 +50,7 @@ impl Game {
             game.settings.map.width,
             game.settings.map.height,
             &mut game,
-            Empty, // Hallways::new(7, 6),
+            Hallways::new(7, 6),
         );
         let px = Uniform::from(0..floor.width);
         let py = Uniform::from(0..floor.height);
