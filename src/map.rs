@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::ops::Deref;
 use std::rc::Rc;
 
@@ -10,6 +11,11 @@ pub mod gen;
 use crate::tile::Tile;
 use crate::Game;
 use gen::Generator;
+
+#[derive(Debug, Deserialize)]
+pub struct MapInfo {
+    pub tiles: HashMap<String, MapTile>,
+}
 
 pub struct Level {
     pub width: usize,

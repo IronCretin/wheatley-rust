@@ -1,3 +1,5 @@
+#![recursion_limit="500"]
+
 use std::collections::hash_map::DefaultHasher;
 use std::env;
 use std::hash::Hasher;
@@ -21,6 +23,7 @@ pub mod colors;
 pub mod game;
 pub mod loader;
 pub mod map;
+pub mod monster;
 pub mod player;
 pub mod point;
 pub mod screen;
@@ -63,7 +66,8 @@ fn main() {
     load(
         "settings.toml",
         "map.toml",
-        Box::new(|settings, map_info| {
+        "monsters.toml",
+        Box::new(|settings, map_info, monster_info| {
             let mut app = App::new(AppOptions {
                 console_width: settings.interface.width,
                 console_height: settings.interface.height,
@@ -99,7 +103,7 @@ fn main() {
             ));
 
             let engine = WheatleyEngine::new(Game::new(
-                settings, map_info,
+                settings, map_info, monster_info,
                 Rc::new(MenuScreen::new(String::from(
 r#"+-------------------------------------------------------------------------+
 |           __          ___                _   _                          |

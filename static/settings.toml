@@ -10,6 +10,9 @@ height = 12
 
 [player]
 fov = 10
+[player.tile]
+ch = '@'
+fg = [255, 255, 255, 255]
 
 [map]
 place_attempts = 100

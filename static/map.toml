@@ -1,21 +1,18 @@
 [tiles.wall]
 ch = '#'
 fg = [255, 255, 255, 255]
-bg = [0, 0, 0, 255]
 transparent = false
 walkable = false
 
 [tiles.floor]
 ch = '.'
 fg = [159, 159, 159, 255]
-bg = [0, 0, 0, 255]
 transparent = true
 walkable = true
 
 [tiles.door]
 ch = '+'
 fg = [191, 151, 96, 255]
-bg = [0, 0, 0, 255]
 transparent = false
 walkable = false
 open = 'open_door'
@@ -23,7 +20,6 @@ open = 'open_door'
 [tiles.open_door]
 ch = "'"
 fg = [191, 151, 96, 255]
-bg = [0, 0, 0, 255]
 transparent = true
 walkable = true
 close = 'door'
@@ -31,7 +27,6 @@ close = 'door'
 [tiles.blackboard_v]
 ch = '|'
 fg = [95, 95, 95, 255]
-bg = [0, 0, 0, 255]
 transparent = true
 walkable = true
 flip = 'blackboard_h'

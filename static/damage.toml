@@ -1,0 +1,52 @@
+[damage.cringe]
+name = 'cringe'
+[[damage.cringe.attacks]]
+player = [" dab on ", ""]
+monster = [" dabs on ", ""]
+[[damage.cringe.attacks]]
+player = [" yeet ", ""]
+monster = [" yeets ", ""]
+[[damage.cringe.attacks]]
+player = [" cringe at ", ""]
+monster = [" cringes at ", ""]
+[[damage.cringe.attacks]]
+player = [" own ", ""]
+monster = [" owns ", ""]
+[[damage.cringe.attacks]]
+player = [" post at ", ""]
+monster = [" posts at ", ""]
+[[damage.cringe.attacks]]
+player = [" dunk on ", ""]
+monster = [" dunks on ", ""]
+[[damage.cringe.attacks]]
+player = [" vibe check ", ""]
+monster = [" vibe checks ", ""]
+
+
+[[damage.cringe.deaths]]
+player = "you loose subscriber"
+monster = ["the ", " looses subscriber"]
+[[damage.cringe.deaths]]
+player = "you have failed your vibe check"
+monster = ["the ", " has failed their vibe check"]
+[[damage.cringe.deaths]]
+player = "you have failed your vibe check"
+monster = ["the ", " has failed their vibe check"]
+[[damage.cringe.deaths]]
+player = "you have been owned"
+monster = ["the ", " has been owned"]
+[[damage.cringe.deaths]]
+player = "you have been cancelled"
+monster = ["the ", " has been cancelled"]
+[[damage.cringe.deaths]]
+player = "you are banned"
+monster = ["the ", " is banned"]
+[[damage.cringe.deaths]]
+player = "you log off"
+monster = ["the ", " logs off"]
+[[damage.cringe.deaths]]
+player = "you have experienced a bruh moment"
+monster = ["the ", " has experienced a bruh moment"]
+[[damage.cringe.deaths]]
+player = "you have been turned into a corncob"
+monster = ["the ", " has been turned into a corncob"]

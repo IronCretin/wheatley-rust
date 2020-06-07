@@ -6,7 +6,8 @@ use rand::SeedableRng;
 use rand_pcg::Pcg32;
 use serde::Deserialize;
 
-use crate::map::{gen::Hallways, Level, MapTile};
+use crate::map::{gen::Hallways, Level, MapInfo};
+use crate::monster::MonsterInfo;
 use crate::player::Player;
 use crate::point::Point;
 use crate::screen::Screen;
@@ -15,6 +16,7 @@ use crate::PLAYER_TILE;
 pub struct Game {
     pub settings: GameSettings,
     pub map: MapInfo,
+    pub monsters: HashMap<String, MonsterInfo>,
     pub menu: Rc<dyn Screen>,
     pub help: Rc<dyn Screen>,
     pub player: Player,
@@ -26,6 +28,7 @@ impl Game {
     pub fn new(
         settings: GameSettings,
         map: MapInfo,
+        monsters: HashMap<String, MonsterInfo>,
         menu: Rc<dyn Screen>,
         help: Rc<dyn Screen>,
         seed: u64,
@@ -33,6 +36,7 @@ impl Game {
         let mut game = Game {
             settings,
             map,
+            monsters,
             menu,
             help,
             player: Player {
@@ -118,9 +122,4 @@ pub struct MapSettings {
     // pub num_monsters: u32,
     pub width: usize,
     pub height: usize,
-}
-
-#[derive(Debug, Deserialize)]
-pub struct MapInfo {
-    pub tiles: HashMap<String, MapTile>,
 }

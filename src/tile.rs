@@ -11,6 +11,7 @@ pub struct Tile {
     #[serde(deserialize_with = "ch_to_u16")]
     pub ch: u16,
     pub fg: Color,
+    #[serde(default = "black")]
     pub bg: Color,
 }
 impl Tile {
@@ -39,4 +40,7 @@ where
         }
     }
     de.deserialize_char(V)
+}
+fn black() -> (u8, u8, u8, u8) {
+    (0, 0, 0, 255)
 }
