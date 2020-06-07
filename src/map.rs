@@ -2,7 +2,7 @@ use std::ops::Deref;
 use std::rc::Rc;
 
 use doryen_fov::{FovAlgorithm, FovRestrictive, MapData};
-use ndarray::{Array, Array2};
+// use ndarray::{Array, Array2};
 use serde_derive::Deserialize;
 
 pub mod gen;
@@ -15,8 +15,8 @@ pub struct Level {
     pub width: usize,
     pub height: usize,
     pub fov_data: MapData,
-    tiles: Array2<MapTile>,
-    seen: Array2<bool>,
+    tiles: Vec<MapTile>,
+    seen: Vec<bool>,
 }
 
 impl Level {
@@ -36,22 +36,22 @@ impl Level {
             width,
             height,
             fov_data,
-            tiles: Array::from_elem((width, height), tile.clone()),
-            seen: Array::from_elem((width, height), false),
+            tiles: vec![tile.clone(); width * height],
+            seen: vec![false; width * height],
         }
     }
     pub fn get(&self, x: usize, y: usize) -> &MapTile {
-        return &self.tiles[[x, y]];
+        return &self.tiles[x * self.width + y];
     }
     pub fn set(&mut self, x: usize, y: usize, t: MapTile) {
         self.fov_data.set_transparent(x, y, t.transparent);
-        self.tiles[[x, y]] = t;
+        self.tiles[x * self.width + y] = t;
     }
     pub fn is_seen(&self, x: usize, y: usize) -> bool {
-        self.seen[[x, y]]
+        self.seen[x * self.width + y]
     }
     pub fn set_seen(&mut self, x: usize, y: usize, seen: bool) {
-        self.seen[[x, y]] = seen;
+        self.seen[x * self.width + y] = seen;
     }
     pub fn compute_fov(&mut self, x: i32, y: i32, radius: i32) {
         self.fov_data.clear_fov();
