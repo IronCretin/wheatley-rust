@@ -6,17 +6,19 @@ use rand::SeedableRng;
 use rand_pcg::Pcg32;
 use serde::Deserialize;
 
+use crate::combat::DamageInfo;
 use crate::map::{gen::Hallways, Level, MapInfo};
 use crate::monster::MonsterInfo;
 use crate::player::Player;
 use crate::point::Point;
 use crate::screen::Screen;
-use crate::PLAYER_TILE;
+use crate::tile::Tile;
 
 pub struct Game {
     pub settings: GameSettings,
-    pub map: MapInfo,
-    pub monsters: HashMap<String, MonsterInfo>,
+    pub map_info: MapInfo,
+    pub monster_info: HashMap<String, MonsterInfo>,
+    pub damage_info: HashMap<String, DamageInfo>,
     pub menu: Rc<dyn Screen>,
     pub help: Rc<dyn Screen>,
     pub player: Player,
@@ -27,22 +29,29 @@ pub struct Game {
 impl Game {
     pub fn new(
         settings: GameSettings,
-        map: MapInfo,
-        monsters: HashMap<String, MonsterInfo>,
+        map_info: MapInfo,
+        monster_info: HashMap<String, MonsterInfo>,
+        damage_info: HashMap<String, DamageInfo>,
         menu: Rc<dyn Screen>,
         help: Rc<dyn Screen>,
         seed: u64,
     ) -> Game {
+        #[cfg(target_arch = "wasm32")]
+        pub use stdweb::console;
+
+        console!(log, &damage_info["cringe"].name);
+
         let mut game = Game {
-            settings,
-            map,
-            monsters,
-            menu,
-            help,
             player: Player {
-                tile: PLAYER_TILE,
+                tile: settings.player.tile,
                 pos: Point(1, 1),
             },
+            settings,
+            map_info,
+            monster_info,
+            damage_info,
+            menu,
+            help,
             levels: Levels {
                 level: 0,
                 floors: Vec::new(),
@@ -115,6 +124,7 @@ pub struct FontSettings {
 #[derive(Debug, Deserialize, Clone)]
 pub struct PlayerSettings {
     pub fov: i32,
+    pub tile: Tile,
 }
 #[derive(Debug, Deserialize, Clone)]
 pub struct MapSettings {

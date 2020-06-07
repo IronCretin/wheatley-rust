@@ -1,6 +1,8 @@
 [zoomer]
 name = "zoomer"
-tile = { ch = 'Z', f = [255, 0, 0, 255] }
-attacks = [{ dam = '1d6', type = 'cringe' }]
-fov = 10
+ch = 'Z'
+fg = [255, 0, 0, 255]
 speed = 200
+health = 10
+attacks = [{ dam = '1d6', class = 'cringe' }]
+fov = 10

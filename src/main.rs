@@ -1,4 +1,4 @@
-#![recursion_limit="500"]
+#![recursion_limit = "500"]
 
 use std::collections::hash_map::DefaultHasher;
 use std::env;
@@ -6,7 +6,7 @@ use std::hash::Hasher;
 use std::rc::Rc;
 
 #[cfg(target_arch = "wasm32")]
-use stdweb::console;
+pub use stdweb::console;
 #[cfg(not(target_arch = "wasm32"))]
 macro_rules! console {
     (log, $arg:expr) => {
@@ -20,6 +20,7 @@ macro_rules! console {
 use doryen_rs::{App, AppOptions};
 
 pub mod colors;
+pub mod combat;
 pub mod game;
 pub mod loader;
 pub mod map;
@@ -29,20 +30,12 @@ pub mod point;
 pub mod screen;
 pub mod tile;
 
-use colors::{BLACK, DARK_GREEN};
 use game::Game;
 use loader::load;
 use screen::game::GameScreen;
 use screen::menu::MenuScreen;
 use screen::textbox::TextBox;
 use screen::{Action, WheatleyEngine};
-use tile::Tile;
-
-pub const PLAYER_TILE: Tile = Tile {
-    ch: '@' as u16,
-    fg: DARK_GREEN,
-    bg: BLACK,
-};
 
 #[cfg(target_arch = "wasm32")]
 fn get_rand() -> u64 {
@@ -67,7 +60,8 @@ fn main() {
         "settings.toml",
         "map.toml",
         "monsters.toml",
-        Box::new(|settings, map_info, monster_info| {
+        "damage.toml",
+        Box::new(|settings, map_info, monster_info, damage_info| {
             let mut app = App::new(AppOptions {
                 console_width: settings.interface.width,
                 console_height: settings.interface.height,
@@ -103,7 +97,7 @@ fn main() {
             ));
 
             let engine = WheatleyEngine::new(Game::new(
-                settings, map_info, monster_info,
+                settings, map_info, monster_info, damage_info,
                 Rc::new(MenuScreen::new(String::from(
 r#"+-------------------------------------------------------------------------+
 |           __          ___                _   _                          |

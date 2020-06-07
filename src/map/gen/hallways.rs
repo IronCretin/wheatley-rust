@@ -44,8 +44,8 @@ fn create(
     game: &mut Game,
 ) {
     let rng = &mut game.map_rng;
-    let door = &game.map.tiles["door"];
-    let floor = &game.map.tiles["floor"];
+    let door = &game.map_info.tiles["door"];
+    let floor = &game.map_info.tiles["floor"];
     // let uminr = minsize as usize;
 
     let hw = depth / 2 + 1;
@@ -228,8 +228,8 @@ fn create_room(
     game: &mut Game,
 ) -> (usize, usize) {
     let rng = &mut game.map_rng;
-    let door = &game.map.tiles["door"];
-    let floor = &game.map.tiles["floor"];
+    let door = &game.map_info.tiles["door"];
+    let floor = &game.map_info.tiles["floor"];
 
     let mut place = |x: i32, y: i32, t| {
         level.set(

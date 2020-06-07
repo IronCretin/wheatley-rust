@@ -54,7 +54,8 @@ impl Screen for GameScreen {
                         if x != 0 || y != 0 {
                             let (ux, uy) = (pos + Point(x, y)).try_into().unwrap();
                             if let Some(cname) = &l.get(ux, uy).close {
-                                let ctile = game.map.tiles[Borrow::<String>::borrow(cname)].clone();
+                                let ctile =
+                                    game.map_info.tiles[Borrow::<String>::borrow(cname)].clone();
                                 l.set(ux, uy, ctile);
                             }
                         }
@@ -104,7 +105,7 @@ fn player_move(game: &mut Game, dpos: Point) {
             game.player.pos = pos;
             true
         } else if let Some(oname) = &tile.open {
-            let otile = game.map.tiles[Borrow::<String>::borrow(oname)].clone();
+            let otile = game.map_info.tiles[Borrow::<String>::borrow(oname)].clone();
             l.set(ux, uy, otile);
             pos = game.player.pos;
             true
