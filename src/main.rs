@@ -3,8 +3,6 @@ use std::env;
 use std::hash::Hasher;
 use std::rc::Rc;
 
-// use rand::random;
-
 #[cfg(target_arch = "wasm32")]
 use stdweb::console;
 #[cfg(not(target_arch = "wasm32"))]
@@ -43,6 +41,17 @@ pub const PLAYER_TILE: Tile = Tile {
     bg: BLACK,
 };
 
+#[cfg(target_arch = "wasm32")]
+fn get_rand() -> u64 {
+    let mut buf = [0; 8];
+    getrandom::getrandom(&mut buf).unwrap();
+    u64::from_le_bytes(buf)
+}
+#[cfg(not(target_arch = "wasm32"))]
+fn get_rand() -> u64 {
+    rand::random()
+}
+
 fn main() {
     if cfg!(target_arch = "wasm32") {
         std::panic::set_hook(Box::new(|p| {
@@ -71,7 +80,7 @@ fn main() {
             {
                 hasher.finish()
             } else {
-                0
+                get_rand()
             };
 
             let help = Rc::new(TextBox::new(

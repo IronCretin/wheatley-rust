@@ -206,6 +206,7 @@ checksum = "7abc8dd8451921606d809ba32e95b6111925cd2906060d2dcc29c070220503eb"
 dependencies = [
  "cfg-if",
  "libc",
+ "stdweb",
  "wasi",
 ]
 
@@ -1054,6 +1055,7 @@ version = "0.1.0"
 dependencies = [
  "doryen-fov",
  "doryen-rs",
+ "getrandom",
  "ndarray",
  "rand 0.7.3",
  "rand_distr",
