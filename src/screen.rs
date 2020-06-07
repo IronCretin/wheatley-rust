@@ -77,9 +77,13 @@ impl Engine for WheatleyEngine {
             }
         }
         if clear {
-            api.con().clear(Some((255,255,255,255)), Some((0,0,0,255)), Some(' ' as u16));
+            api.con().clear(
+                Some((255, 255, 255, 255)),
+                Some((0, 0, 0, 255)),
+                Some(' ' as u16),
+            );
         }
-        
+
         for key in api.input().keys_released() {
             self.held_keys.remove(key);
         }

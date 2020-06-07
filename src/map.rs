@@ -1,31 +1,34 @@
+use std::ops::Deref;
+use std::rc::Rc;
+
 use doryen_fov::{FovAlgorithm, FovRestrictive, MapData};
 use ndarray::{Array, Array2};
+use serde_derive::Deserialize;
 
 pub mod gen;
-pub mod tile;
 
+use crate::tile::Tile;
 use crate::Game;
 use gen::Generator;
-use tile::MapTile;
 
 pub struct Level {
-    pub width: i32,
-    pub height: i32,
+    pub width: usize,
+    pub height: usize,
     pub fov_data: MapData,
     tiles: Array2<MapTile>,
-    pub seen: Array2<bool>,
+    seen: Array2<bool>,
 }
 
 impl Level {
-    pub fn generate<T: Generator>(width: i32, height: i32, game: &mut Game, gen: T) -> Level {
+    pub fn generate<T: Generator>(width: usize, height: usize, game: &mut Game, gen: T) -> Level {
         let mut l = Level::new(width, height, &game.map.tiles["wall"]);
         gen.generate(game, &mut l);
         l
     }
-    fn new(width: i32, height: i32, tile: &MapTile) -> Level {
-        let mut fov_data = MapData::new(width as usize, height as usize);
-        for x in 0..width as usize {
-            for y in 0..width as usize {
+    fn new(width: usize, height: usize, tile: &MapTile) -> Level {
+        let mut fov_data = MapData::new(width, height);
+        for x in 0..width {
+            for y in 0..width {
                 fov_data.set_transparent(x, y, tile.transparent);
             }
         }
@@ -33,20 +36,22 @@ impl Level {
             width,
             height,
             fov_data,
-            tiles: Array::from_elem((width as usize, height as usize), tile.clone()),
-            seen: Array::from_elem((width as usize, height as usize), false),
+            tiles: Array::from_elem((width, height), tile.clone()),
+            seen: Array::from_elem((width, height), false),
         }
     }
-    pub fn get(&self, x: i32, y: i32) -> &MapTile {
-        return &self.tiles[[x as usize, y as usize]];
+    pub fn get(&self, x: usize, y: usize) -> &MapTile {
+        return &self.tiles[[x, y]];
     }
-    pub fn get_mut(&mut self, x: i32, y: i32) -> &mut MapTile {
-        return &mut self.tiles[[x as usize, y as usize]];
+    pub fn set(&mut self, x: usize, y: usize, t: MapTile) {
+        self.fov_data.set_transparent(x, y, t.transparent);
+        self.tiles[[x, y]] = t;
     }
-    pub fn set(&mut self, x: i32, y: i32, t: MapTile) {
-        self.fov_data
-            .set_transparent(x as usize, y as usize, t.transparent);
-        self.tiles[[x as usize, y as usize]] = t;
+    pub fn is_seen(&self, x: usize, y: usize) -> bool {
+        self.seen[[x, y]]
+    }
+    pub fn set_seen(&mut self, x: usize, y: usize, seen: bool) {
+        self.seen[[x, y]] = seen;
     }
     pub fn compute_fov(&mut self, x: i32, y: i32, radius: i32) {
         self.fov_data.clear_fov();
@@ -58,7 +63,26 @@ impl Level {
             true,
         );
     }
-    pub fn is_in_fov(&self, x: i32, y: i32) -> bool {
-        self.fov_data.is_in_fov(x as usize, y as usize)
+    pub fn is_in_fov(&self, x: usize, y: usize) -> bool {
+        self.fov_data.is_in_fov(x, y)
+    }
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MapTile {
+    #[serde(flatten)]
+    pub tile: Tile,
+
+    pub transparent: bool,
+    pub walkable: bool,
+    pub open: Option<Rc<String>>,
+    pub close: Option<Rc<String>>,
+    pub flip: Option<Rc<String>>,
+}
+
+impl Deref for MapTile {
+    type Target = Tile;
+    fn deref(&self) -> &Tile {
+        &self.tile
     }
 }

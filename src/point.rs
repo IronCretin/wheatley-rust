@@ -1,7 +1,19 @@
+use std::convert::{TryFrom, TryInto};
+use std::num::TryFromIntError;
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub struct Point(pub i32, pub i32);
+
+impl TryFrom<Point> for (usize, usize) {
+    type Error = TryFromIntError;
+
+    fn try_from(Point(x, y): Point) -> Result<(usize, usize), TryFromIntError> {
+        let ux: usize = x.try_into()?;
+        let uy: usize = y.try_into()?;
+        Ok((ux, uy))
+    }
+}
 
 impl Add for Point {
     type Output = Self;

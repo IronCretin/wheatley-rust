@@ -3,15 +3,15 @@ use rand::Rng;
 use rand_distr::{Distribution, Triangular, Uniform};
 
 use super::Generator;
-use crate::Game;
 use crate::map::Level;
+use crate::Game;
 
 pub struct Hallways {
-    depth: i32,
     minr: i32,
+    depth: usize,
 }
 impl Hallways {
-    pub fn new(depth: i32, minr: i32) -> Hallways {
+    pub fn new(depth: usize, minr: i32) -> Hallways {
         Hallways { depth, minr }
     }
 }
@@ -24,9 +24,9 @@ impl Generator for Hallways {
             self.minr,
             game.map_rng.gen(),
             1,
-            level.width - 1,
+            level.width as usize - 1,
             1,
-            level.height - 1,
+            level.height as usize - 1,
             game,
         );
     }
@@ -34,35 +34,40 @@ impl Generator for Hallways {
 
 fn create(
     level: &mut Level,
-    depth: i32,
+    depth: usize,
     minr: i32,
     xaxis: bool,
-    mut x0: i32,
-    mut x1: i32,
-    mut y0: i32,
-    mut y1: i32,
+    mut x0: usize,
+    mut x1: usize,
+    mut y0: usize,
+    mut y1: usize,
     game: &mut Game,
 ) {
     let rng = &mut game.map_rng;
     let door = &game.map.tiles["door"];
     let floor = &game.map.tiles["floor"];
+    // let uminr = minsize as usize;
 
     let hw = depth / 2 + 1;
-    if x0 + 1 + minr > x1 - hw - minr || y0 + 1 + minr > y1 - hw - minr {
+    if x0 + 1 > x1 - hw || y0 + 1 > y1 - hw {
         return;
     }
     if depth > 0 {
         // hallways
         if xaxis {
             // x axis
-            let (xmin, xmax) = ((x0 + 1 + minr) as f64, (x1 - hw - minr) as f64);
-            let x: i32 = Triangular::new(xmin, xmax, (xmin + xmax) / 2.0)
+            let (xmin, xmax) = ((x0 + 1) as f64, (x1 - hw) as f64);
+            let x: usize = Triangular::new(xmin, xmax, (xmin + xmax) / 2.0)
                 .unwrap()
-                .sample(rng) as i32;
+                .sample(rng) as usize;
             let (doors1, doors2): (bool, bool) = rng.gen();
 
             for i in 0..hw {
-                level.set(x + i, y0 - 1, if doors1 { door.clone() } else { floor.clone() });
+                level.set(
+                    x + i,
+                    y0 - 1,
+                    if doors1 { door.clone() } else { floor.clone() },
+                );
                 level.set(x + i, y1, if doors2 { door.clone() } else { floor.clone() });
             }
             for y in y0..y1 {
@@ -74,14 +79,18 @@ fn create(
             create(level, depth - 1, minr, !xaxis, x + hw + 1, x1, y0, y1, game);
         } else {
             // y axis
-            let (ymin, ymax) = ((y0 + 1 + minr) as f64, (y1 - hw - minr) as f64);
-            let y: i32 = Triangular::new(ymin, ymax, (ymin + ymax) / 2.0)
+            let (ymin, ymax) = ((y0 + 1) as f64, (y1 - hw) as f64);
+            let y: usize = Triangular::new(ymin, ymax, (ymin + ymax) / 2.0)
                 .unwrap()
-                .sample(rng) as i32;
+                .sample(rng) as usize;
             let (doors1, doors2): (bool, bool) = rng.gen();
 
             for i in 0..hw {
-                level.set(x0 - 1, y + i, if doors1 { door.clone() } else { floor.clone() });
+                level.set(
+                    x0 - 1,
+                    y + i,
+                    if doors1 { door.clone() } else { floor.clone() },
+                );
                 level.set(x1, y + i, if doors2 { door.clone() } else { floor.clone() });
             }
             for x in x0..x1 {
@@ -103,10 +112,10 @@ fn create(
         for side in [Top, Bottom, Left, Right].choose_multiple(rng, nsides) {
             match side {
                 Top => {
-                    if y0 != 1 && y1 - y0 >= minr {
+                    if y0 != 1 && (y1 as i32 - y0 as i32) >= minr {
                         let mut x = x0;
                         let mut height = 0;
-                        while x1 - x >= minr {
+                        while (x1 as i32 - x as i32) >= minr {
                             let (w, h) = create_room(
                                 level,
                                 x,
@@ -114,9 +123,9 @@ fn create(
                                 (1, 0),
                                 (0, 1),
                                 minr,
-                                x1 - x,
+                                (x1 - x) as i32,
                                 minr,
-                                y1 - y0,
+                                (y1 - y0) as i32,
                                 game,
                             );
                             x += w + 1;
@@ -128,10 +137,10 @@ fn create(
                     }
                 }
                 Bottom => {
-                    if y0 != level.height - 2 && y1 - y0 >= minr {
+                    if y0 != level.height - 2 && (y1 as i32 - y0 as i32) >= minr {
                         let mut x = x0;
                         let mut height = 0;
-                        while x1 - x >= minr {
+                        while (x1 as i32 - x as i32) >= minr {
                             let (w, h) = create_room(
                                 level,
                                 x,
@@ -139,9 +148,9 @@ fn create(
                                 (1, 0),
                                 (0, -1),
                                 minr,
-                                x1 - x,
+                                (x1 - x) as i32,
                                 minr,
-                                y1 - y0,
+                                (y1 - y0) as i32,
                                 game,
                             );
                             x += w + 1;
@@ -153,10 +162,10 @@ fn create(
                     }
                 }
                 Left => {
-                    if x0 != 1 && x1 - x0 >= minr {
+                    if x0 != 1 && (x1 as i32 - x0 as i32) >= minr {
                         let mut y = y0;
                         let mut height = 0;
-                        while y1 - y >= minr {
+                        while (y1 as i32 - y as i32) >= minr {
                             let (w, h) = create_room(
                                 level,
                                 x0,
@@ -164,9 +173,9 @@ fn create(
                                 (0, 1),
                                 (1, 0),
                                 minr,
-                                y1 - y,
+                                (y1 - y) as i32,
                                 minr,
-                                x1 - x0,
+                                (x1 - x0) as i32,
                                 game,
                             );
                             y += w + 1;
@@ -178,10 +187,10 @@ fn create(
                     }
                 }
                 Right => {
-                    if x0 != level.height - 2 && x1 - x0 >= minr {
+                    if x0 != level.height - 2 && (x1 as i32 - x0 as i32) >= minr {
                         let mut y = y0;
                         let mut height = 0;
-                        while y1 - y >= minr {
+                        while (y1 as i32 - y as i32) >= minr {
                             let (w, h) = create_room(
                                 level,
                                 x1 - 1,
@@ -189,9 +198,9 @@ fn create(
                                 (0, 1),
                                 (-1, 0),
                                 minr,
-                                y1 - y,
+                                (y1 - y) as i32,
                                 minr,
-                                x1 - x0,
+                                (x1 - x0) as i32,
                                 game,
                             );
                             y += w + 1;
@@ -208,8 +217,8 @@ fn create(
 }
 fn create_room(
     level: &mut Level,
-    x0: i32,
-    y0: i32,
+    x0: usize,
+    y0: usize,
     dx: (i32, i32),
     dy: (i32, i32),
     xmin: i32,
@@ -217,23 +226,17 @@ fn create_room(
     ymin: i32,
     ymax: i32,
     game: &mut Game,
-) -> (i32, i32) {
+) -> (usize, usize) {
     let rng = &mut game.map_rng;
     let door = &game.map.tiles["door"];
     let floor = &game.map.tiles["floor"];
 
-
     let mut place = |x: i32, y: i32, t| {
-        if x0 + x * dx.0 + y * dy.0 < 0 || y0 + x * dx.1 + y * dy.1 < 0 {
-            println!(
-                "tried to draw {},{} (really {},{})",
-                x,
-                y,
-                x0 + x * dx.0 + y * dy.0,
-                y0 + x * dx.1 + y * dy.1
-            );
-        }
-        level.set(x0 + x * dx.0 + y * dy.0, y0 + x * dx.1 + y * dy.1, t);
+        level.set(
+            (x0 as i32 + x * dx.0 + y * dy.0) as usize,
+            (y0 as i32 + x * dx.1 + y * dy.1) as usize,
+            t,
+        );
     };
     let w = if xmin > xmax / 2 {
         xmax
@@ -248,7 +251,7 @@ fn create_room(
     }
     let dx = *[0, w - 1].choose(rng).unwrap();
     place(dx, -1, door.clone());
-    (w, h)
+    (w as usize, h as usize)
 }
 
 #[derive(Debug)]

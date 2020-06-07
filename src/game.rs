@@ -6,7 +6,7 @@ use rand::SeedableRng;
 use rand_pcg::Pcg32;
 use serde::Deserialize;
 
-use crate::map::{gen::Hallways, tile::MapTile, Level};
+use crate::map::{gen::Hallways, Level, MapTile};
 use crate::player::Player;
 use crate::point::Point;
 use crate::screen::Screen;
@@ -58,7 +58,7 @@ impl Game {
             let x = px.sample(&mut game.map_rng);
             let y = py.sample(&mut game.map_rng);
             if floor.get(x, y).walkable {
-                game.player.pos = Point(x, y);
+                game.player.pos = Point(x as i32, y as i32);
                 break;
             }
         }
@@ -116,8 +116,8 @@ pub struct PlayerSettings {
 pub struct MapSettings {
     pub place_attempts: i32,
     // pub num_monsters: u32,
-    pub width: i32,
-    pub height: i32,
+    pub width: usize,
+    pub height: usize,
 }
 
 #[derive(Debug, Deserialize)]

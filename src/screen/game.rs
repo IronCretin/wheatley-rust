@@ -1,4 +1,5 @@
 use std::borrow::Borrow;
+use std::convert::TryInto;
 
 use doryen_rs::Console;
 
@@ -24,15 +25,16 @@ impl Screen for GameScreen {
         for x in 0..w {
             for y in 0..h {
                 let p = Point(x, y) + offset;
-                if 0 <= p.0 && p.0 < level.width && 0 <= p.1 && p.1 < level.height {
-                    if level.is_in_fov(p.0, p.1) {
-                        level.seen[[p.0 as usize, p.1 as usize]] = true;
-                        level.get(p.0, p.1).draw(Point(x, y), con);
-                    } else if level.seen[[p.0 as usize, p.1 as usize]] {
+                if 0 <= p.0 && p.0 < level.width as i32 && 0 <= p.1 && p.1 < level.height as i32 {
+                    let (ux, uy) = p.try_into().unwrap();
+                    if level.is_in_fov(ux, uy) {
+                        level.set_seen(ux, uy, true);
+                        level.get(ux, uy).draw(Point(x, y), con);
+                    } else if level.is_seen(ux, uy) {
                         con.cell(
                             x,
                             y,
-                            Some(level.get(p.0, p.1).ch),
+                            Some(level.get(ux, uy).ch),
                             Some(DARK_GREY),
                             Some(BLACK),
                         );
@@ -50,10 +52,10 @@ impl Screen for GameScreen {
                 for x in -1..=1 {
                     for y in -1..=1 {
                         if x != 0 || y != 0 {
-                            let p = pos + Point(x, y);
-                            if let Some(cname) = &l.get(p.0, p.1).close {
+                            let (ux, uy) = (pos + Point(x, y)).try_into().unwrap();
+                            if let Some(cname) = &l.get(ux, uy).close {
                                 let ctile = game.map.tiles[Borrow::<String>::borrow(cname)].clone();
-                                l.set(p.0, p.1, ctile);
+                                l.set(ux, uy, ctile);
                             }
                         }
                     }
@@ -94,15 +96,16 @@ impl Screen for GameScreen {
 
 fn player_move(game: &mut Game, dpos: Point) {
     let mut pos = game.player.pos + dpos;
+    let (ux, uy) = pos.try_into().unwrap();
     let l = game.levels.cur_mut();
-    let tick = if 0 <= pos.0 && pos.0 < l.width && 0 <= pos.1 && pos.1 < l.height {
-        let tile = l.get(pos.0, pos.1);
+    let tick = if ux < l.width && uy < l.height {
+        let tile = l.get(ux, uy);
         if tile.walkable {
             game.player.pos = pos;
             true
         } else if let Some(oname) = &tile.open {
             let otile = game.map.tiles[Borrow::<String>::borrow(oname)].clone();
-            l.set(pos.0, pos.1, otile);
+            l.set(ux, uy, otile);
             pos = game.player.pos;
             true
         } else {
