@@ -34,22 +34,21 @@ impl Generator for Hallways {
         );
         let px = Uniform::from(0..level.width);
         let py = Uniform::from(0..level.height);
-        let mon_names: Vec<&String> = game.monster_info.keys().collect();
+        let mon_names: Vec<&String> = game.info.monster.keys().collect();
         let dist =
-            WeightedIndex::new(mon_names.iter().map(|n| game.monster_info[*n].weight)).unwrap();
-        for _ in 0..game.settings.map.num_monsters {
-            for _ in 0..game.settings.map.place_attempts {
+            WeightedIndex::new(mon_names.iter().map(|n| game.info.monster[*n].weight)).unwrap();
+        for _ in 0..game.info.settings.map.num_monsters {
+            for _ in 0..game.info.settings.map.place_attempts {
                 let x = px.sample(&mut game.map_rng);
                 let y = py.sample(&mut game.map_rng);
                 if level.get(x, y).walkable {
                     let name = mon_names[dist.sample(&mut game.map_rng)];
-                    let info = game.monster_info[name].clone();
+                    let info = game.info.monster[name].clone();
                     level.monsters.push(Monster {
                         pos: Point(x as i32, y as i32),
                         hp: info.health,
                         info,
                     });
-                    // game.player.pos = Point(x as i32, y as i32);
                     break;
                 }
             }
@@ -69,8 +68,8 @@ fn create(
     game: &mut Game,
 ) {
     let rng = &mut game.map_rng;
-    let door = &game.map_info.tiles["door"];
-    let floor = &game.map_info.tiles["floor"];
+    let door = &game.info.map.tiles["door"];
+    let floor = &game.info.map.tiles["floor"];
     // let uminr = minsize as usize;
 
     let hw = depth / 2 + 1;
@@ -253,8 +252,8 @@ fn create_room(
     game: &mut Game,
 ) -> (usize, usize) {
     let rng = &mut game.map_rng;
-    let door = &game.map_info.tiles["door"];
-    let floor = &game.map_info.tiles["floor"];
+    let door = &game.info.map.tiles["door"];
+    let floor = &game.info.map.tiles["floor"];
 
     let mut place = |x: i32, y: i32, t| {
         level.set(

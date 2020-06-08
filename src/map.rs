@@ -29,7 +29,7 @@ pub struct Level {
 
 impl Level {
     pub fn generate<T: Generator>(width: usize, height: usize, game: &mut Game, gen: T) -> Level {
-        let mut l = Level::new(width, height, game.map_info.tiles["wall"].clone());
+        let mut l = Level::new(width, height, game.info.map.tiles["wall"].clone());
         gen.generate(game, &mut l);
         l
     }

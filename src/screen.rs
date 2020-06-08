@@ -89,7 +89,7 @@ impl Engine for WheatleyEngine {
         }
 
         let keys = &self.held_keys;
-        let key_delay = game.settings.interface.key_delay;
+        let key_delay = game.info.settings.interface.key_delay;
         self.screens.last_mut().map(|s| {
             s.handle_held(
                 game,

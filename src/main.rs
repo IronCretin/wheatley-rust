@@ -30,7 +30,7 @@ pub mod point;
 pub mod screen;
 pub mod tile;
 
-use game::{Game, GameSettings};
+use game::{Game, GameInfo, GameSettings};
 use loader::load;
 use screen::game::GameScreen;
 use screen::menu::MenuScreen;
@@ -100,10 +100,12 @@ You can also use numpad or vi-keys:
             ));
 
             let engine = WheatleyEngine::new(Game::new(
-                settings,
-                toml::from_str(map_info).expect("Could not parse map info"),
-                toml::from_str(monster_info).expect("Could not parse monsters"),
-                toml::from_str(damage_info).expect("Could not parse damage"),
+                GameInfo {
+                    settings,
+                    map: toml::from_str(map_info).expect("Could not parse map info"),
+                    monster: toml::from_str(monster_info).expect("Could not parse monsters"),
+                    damage: toml::from_str(damage_info).expect("Could not parse damage"),
+                },
                 Rc::new(MenuScreen::new(String::from(
 r#"+-------------------------------------------------------------------------+
 |           __          ___                _   _                          |

@@ -10,6 +10,7 @@ use crate::colors::*;
 use crate::game::Game;
 use crate::map::{gen::Hallways, Level};
 use crate::point::Point;
+use crate::monster::move_to;
 
 pub struct GameScreen {
     entered: Cell<bool>,
@@ -27,14 +28,14 @@ impl Screen for GameScreen {
     fn enter(&self, game: &mut Game) {
         if !self.entered.get() {
             let floor = Level::generate(
-                game.settings.map.width,
-                game.settings.map.height,
+                game.info.settings.map.width,
+                game.info.settings.map.height,
                 game,
                 Hallways::new(7, 6),
             );
             let px = Uniform::from(0..floor.width);
             let py = Uniform::from(0..floor.height);
-            for _ in 0..game.settings.map.place_attempts {
+            for _ in 0..game.info.settings.map.place_attempts {
                 let x = px.sample(&mut game.map_rng);
                 let y = py.sample(&mut game.map_rng);
                 if floor.get(x, y).walkable {
@@ -46,7 +47,7 @@ impl Screen for GameScreen {
             let pos = game.player.pos;
             game.levels
                 .cur_mut()
-                .compute_fov(pos.0, pos.1, game.settings.player.fov);
+                .compute_fov(pos.0, pos.1, game.info.settings.player.fov);
             self.entered.set(false);
         }
     }
@@ -91,7 +92,7 @@ impl Screen for GameScreen {
                             let (ux, uy) = (pos + Point(x, y)).try_into().unwrap();
                             if let Some(cname) = &l.get(ux, uy).close {
                                 let ctile =
-                                    game.map_info.tiles[Borrow::<String>::borrow(cname)].clone();
+                                    game.info.map.tiles[Borrow::<String>::borrow(cname)].clone();
                                 l.set(ux, uy, ctile);
                             }
                         }
@@ -122,32 +123,11 @@ impl Screen for GameScreen {
         } else {
             Point(0, 0)
         };
-        player_move(game, dpos);
-    }
-}
-
-fn player_move(game: &mut Game, dpos: Point) {
-    let mut pos = game.player.pos + dpos;
-    let (ux, uy) = pos.try_into().unwrap();
-    let l = game.levels.cur_mut();
-    let tick = if ux < l.width && uy < l.height {
-        let tile = l.get(ux, uy);
-        if tile.walkable {
-            game.player.pos = pos;
-            true
-        } else if let Some(oname) = &tile.open {
-            let otile = game.map_info.tiles[Borrow::<String>::borrow(oname)].clone();
-            l.set(ux, uy, otile);
-            pos = game.player.pos;
-            true
-        } else {
-            false
+        let tick = move_to(&mut game.player, dpos, game.levels.cur_mut(), &game.info);
+        if tick {
+            let fov = game.info.settings.player.fov;
+            let pos = game.player.pos;
+            game.levels.cur_mut().compute_fov(pos.0, pos.1, fov);
         }
-    } else {
-        false
-    };
-    if tick {
-        let fov = game.settings.player.fov;
-        l.compute_fov(pos.0, pos.1, fov);
     }
 }

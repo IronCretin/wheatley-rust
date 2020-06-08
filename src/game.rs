@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::rc::Rc;
+use std::ops::{Index, IndexMut};
 
 use rand::SeedableRng;
 use rand_pcg::Pcg32;
@@ -14,10 +15,7 @@ use crate::screen::Screen;
 use crate::tile::Tile;
 
 pub struct Game {
-    pub settings: GameSettings,
-    pub map_info: MapInfo,
-    pub monster_info: HashMap<String, Rc<MonsterInfo>>,
-    pub damage_info: HashMap<String, DamageInfo>,
+    pub info: GameInfo,
     pub menu: Rc<dyn Screen>,
     pub help: Rc<dyn Screen>,
     pub player: Player,
@@ -27,10 +25,7 @@ pub struct Game {
 
 impl Game {
     pub fn new(
-        settings: GameSettings,
-        map_info: MapInfo,
-        monster_info: HashMap<String, Rc<MonsterInfo>>,
-        damage_info: HashMap<String, DamageInfo>,
+        info: GameInfo,
         menu: Rc<dyn Screen>,
         help: Rc<dyn Screen>,
         seed: u64,
@@ -40,13 +35,10 @@ impl Game {
 
         Game {
             player: Player {
-                tile: settings.player.tile,
+                tile: info.settings.player.tile,
                 pos: Point(1, 1),
             },
-            settings,
-            map_info,
-            monster_info,
-            damage_info,
+            info,
             menu,
             help,
             levels: Levels {
@@ -68,6 +60,9 @@ impl Levels {
     pub fn add_top(&mut self, level: Level) {
         self.floors.push(level);
     }
+    pub fn cur_idx(&self) -> i32 {
+        self.level
+    }
     pub fn cur(&self) -> &Level {
         if self.level < 0 {
             &self.basement[(-self.level + 1) as usize]
@@ -82,6 +77,32 @@ impl Levels {
             &mut self.floors[self.level as usize]
         }
     }
+}
+impl Index<i32> for Levels {
+    type Output = Level;
+    fn index(&self, leveln: i32) -> &Level {
+        if leveln >= 0 {
+            &self.floors[leveln as usize]
+        } else {
+            &self.basement[(-leveln - 1) as usize]
+        }
+    }
+}
+impl IndexMut<i32> for Levels {
+    fn index_mut(&mut self, leveln: i32) -> &mut Level {
+        if leveln >= 0 {
+            &mut self.floors[leveln as usize]
+        } else {
+            &mut self.basement[(-leveln - 1) as usize]
+        }
+    }
+}
+
+pub struct GameInfo {
+    pub settings: GameSettings,
+    pub map: MapInfo,
+    pub monster: HashMap<String, Rc<MonsterInfo>>,
+    pub damage: HashMap<String, DamageInfo>,
 }
 
 #[derive(Debug, Deserialize, Clone)]
