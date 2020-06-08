@@ -30,7 +30,7 @@ pub mod point;
 pub mod screen;
 pub mod tile;
 
-use game::Game;
+use game::{Game, GameSettings};
 use loader::load;
 use screen::game::GameScreen;
 use screen::menu::MenuScreen;
@@ -57,11 +57,14 @@ fn main() {
     }
 
     load(
-        "settings.toml",
-        "map.toml",
-        "monsters.toml",
-        "damage.toml",
-        Box::new(|settings, map_info, monster_info, damage_info| {
+        &["settings.toml", "map.toml", "monsters.toml", "damage.toml"],
+        Box::new(|info| {
+            let settings_info = &info[0];
+            let map_info = &info[1];
+            let monster_info = &info[2];
+            let damage_info = &info[3];
+            let settings: GameSettings =
+                toml::from_str(settings_info).expect("Could not parse settings");
             let mut app = App::new(AppOptions {
                 console_width: settings.interface.width,
                 console_height: settings.interface.height,
@@ -85,11 +88,11 @@ fn main() {
                 Some(String::from("Help")),
                 String::from(
                     r#"? - Show help screen
-    Arrow keys: move around
-    You can also use numpad or vi-keys:
-    7 8 9    y k u
-    4 @ 6    h @ l
-    1 2 3    b j n"#,
+Arrow keys: move around
+You can also use numpad or vi-keys:
+7 8 9    y k u
+4 @ 6    h @ l
+1 2 3    b j n"#,
                 ),
                 50,
                 30,
@@ -97,7 +100,10 @@ fn main() {
             ));
 
             let engine = WheatleyEngine::new(Game::new(
-                settings, map_info, monster_info, damage_info,
+                settings,
+                toml::from_str(map_info).expect("Could not parse map info"),
+                toml::from_str(monster_info).expect("Could not parse monsters"),
+                toml::from_str(damage_info).expect("Could not parse damage"),
                 Rc::new(MenuScreen::new(String::from(
 r#"+-------------------------------------------------------------------------+
 |           __          ___                _   _                          |
