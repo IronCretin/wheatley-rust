@@ -23,7 +23,7 @@ pub struct Level {
     pub height: usize,
     fov_data: MapData,
     tiles: Vec<Rc<MapTile>>,
-    seen: Vec<bool>,
+    pub seen: Seen,
     pub monsters: Vec<Monster>,
 }
 
@@ -45,7 +45,7 @@ impl Level {
             height,
             fov_data,
             tiles: vec![tile.clone(); width * height],
-            seen: vec![false; width * height],
+            seen: Seen {width, seen: vec![None; width * height]},
             monsters: Vec::new(),
         }
     }
@@ -59,12 +59,6 @@ impl Level {
         self.fov_data.set_transparent(x, y, t.transparent);
         self.tiles[x * self.width + y] = t;
     }
-    pub fn is_seen(&self, x: usize, y: usize) -> bool {
-        self.seen[x * self.width + y]
-    }
-    pub fn set_seen(&mut self, x: usize, y: usize, seen: bool) {
-        self.seen[x * self.width + y] = seen;
-    }
     pub fn compute_fov(&mut self, x: i32, y: i32, radius: i32) {
         self.fov_data.clear_fov();
         FovRestrictive::default().compute_fov(
@@ -77,6 +71,20 @@ impl Level {
     }
     pub fn is_in_fov(&self, x: usize, y: usize) -> bool {
         self.fov_data.is_in_fov(x, y)
+    }
+
+}
+
+pub struct Seen {
+    width: usize,
+    seen: Vec<Option<u16>>
+}
+impl Seen {
+    pub fn is_seen(&self, x: usize, y: usize) -> Option<u16> {
+        self.seen[x * self.width + y]
+    }
+    pub fn set_seen(&mut self, x: usize, y: usize, seen: u16) {
+        self.seen[x * self.width + y] = Some(seen);
     }
 }
 

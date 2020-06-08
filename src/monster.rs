@@ -1,5 +1,5 @@
-use std::rc::Rc;
 use std::ops::Deref;
+use std::rc::Rc;
 
 use serde_derive::Deserialize;
 
@@ -43,4 +43,4 @@ impl Deref for Monster {
     fn deref(&self) -> &MonsterInfo {
         &self.info
     }
-} 
+}

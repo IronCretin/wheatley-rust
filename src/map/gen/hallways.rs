@@ -43,7 +43,6 @@ impl Generator for Hallways {
                 let y = py.sample(&mut game.map_rng);
                 if level.get(x, y).walkable {
                     let name = mon_names[dist.sample(&mut game.map_rng)];
-                    println!("placing {} at {},{}", name, x, y);
                     let info = game.monster_info[name].clone();
                     level.monsters.push(Monster {
                         pos: Point(x as i32, y as i32),

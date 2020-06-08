@@ -61,26 +61,22 @@ impl Screen for GameScreen {
                 if 0 <= p.0 && p.0 < level.width as i32 && 0 <= p.1 && p.1 < level.height as i32 {
                     let (ux, uy) = p.try_into().unwrap();
                     if level.is_in_fov(ux, uy) {
-                        level.set_seen(ux, uy, true);
-                        level.get(ux, uy).draw(Point(x, y), con);
-                    } else if level.is_seen(ux, uy) {
-                        con.cell(
-                            x,
-                            y,
-                            Some(level.get(ux, uy).ch),
-                            Some(DARK_GREY),
-                            Some(BLACK),
-                        );
+                        let t = level.get(ux, uy);
+                        t.draw(Point(x, y), con);
+                        let ch = t.ch;
+                        level.seen.set_seen(ux, uy, ch);
+                    } else if let Some(ch) = level.seen.is_seen(ux, uy) {
+                        con.cell(x, y, Some(ch), Some(DARKER_GREY), Some(BLACK));
                     }
                 }
             }
         }
         for mon in &level.monsters {
-            if level.is_in_fov(mon.pos.0 as usize, mon.pos.1 as usize){
-            let p = mon.pos - offset;
-            if 0 <= p.0 && p.0 < level.width as i32 && 0 <= p.1 && p.1 < level.height as i32 {
+            if level.is_in_fov(mon.pos.0 as usize, mon.pos.1 as usize) {
+                let p = mon.pos - offset;
                 mon.draw(p, con);
-            }}
+                level.seen.set_seen(mon.pos.0 as usize, mon.pos.1 as usize, mon.ch);
+            }
         }
         game.player.draw(game.player.pos - offset, con);
     }
