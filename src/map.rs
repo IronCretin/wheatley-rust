@@ -14,24 +14,24 @@ use gen::Generator;
 
 #[derive(Debug, Deserialize)]
 pub struct MapInfo {
-    pub tiles: HashMap<String, MapTile>,
+    pub tiles: HashMap<String, Rc<MapTile>>,
 }
 
 pub struct Level {
     pub width: usize,
     pub height: usize,
     pub fov_data: MapData,
-    tiles: Vec<MapTile>,
+    tiles: Vec<Rc<MapTile>>,
     seen: Vec<bool>,
 }
 
 impl Level {
     pub fn generate<T: Generator>(width: usize, height: usize, game: &mut Game, gen: T) -> Level {
-        let mut l = Level::new(width, height, &game.map_info.tiles["wall"]);
+        let mut l = Level::new(width, height, game.map_info.tiles["wall"].clone());
         gen.generate(game, &mut l);
         l
     }
-    fn new(width: usize, height: usize, tile: &MapTile) -> Level {
+    fn new(width: usize, height: usize, tile: Rc<MapTile>) -> Level {
         let mut fov_data = MapData::new(width, height);
         for x in 0..width {
             for y in 0..width {
@@ -49,7 +49,10 @@ impl Level {
     pub fn get(&self, x: usize, y: usize) -> &MapTile {
         return &self.tiles[x * self.width + y];
     }
-    pub fn set(&mut self, x: usize, y: usize, t: MapTile) {
+    pub fn get_rc(&self, x: usize, y: usize) -> Rc<MapTile> {
+        return self.tiles[x * self.width + y].clone();
+    }
+    pub fn set(&mut self, x: usize, y: usize, t: Rc<MapTile>) {
         self.fov_data.set_transparent(x, y, t.transparent);
         self.tiles[x * self.width + y] = t;
     }
@@ -81,9 +84,9 @@ pub struct MapTile {
 
     pub transparent: bool,
     pub walkable: bool,
-    pub open: Option<Rc<String>>,
-    pub close: Option<Rc<String>>,
-    pub flip: Option<Rc<String>>,
+    pub open: Option<String>,
+    pub close: Option<String>,
+    pub flip: Option<String>,
 }
 
 impl Deref for MapTile {
