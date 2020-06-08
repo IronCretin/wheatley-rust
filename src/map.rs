@@ -8,6 +8,7 @@ use serde_derive::Deserialize;
 
 pub mod gen;
 
+use crate::monster::Monster;
 use crate::tile::Tile;
 use crate::Game;
 use gen::Generator;
@@ -20,9 +21,10 @@ pub struct MapInfo {
 pub struct Level {
     pub width: usize,
     pub height: usize,
-    pub fov_data: MapData,
+    fov_data: MapData,
     tiles: Vec<Rc<MapTile>>,
     seen: Vec<bool>,
+    pub monsters: Vec<Monster>,
 }
 
 impl Level {
@@ -44,6 +46,7 @@ impl Level {
             fov_data,
             tiles: vec![tile.clone(); width * height],
             seen: vec![false; width * height],
+            monsters: Vec::new(),
         }
     }
     pub fn get(&self, x: usize, y: usize) -> &MapTile {

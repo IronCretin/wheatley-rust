@@ -134,7 +134,6 @@ r#"+-------------------------------------------------------------------------+
             )), help, seed));
 
             app.set_engine(Box::new(engine));
-            console!(log, "game time started");
             app.run();
         }),
     );

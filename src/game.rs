@@ -1,13 +1,12 @@
 use std::collections::HashMap;
 use std::rc::Rc;
 
-use rand::distributions::{Distribution, Uniform};
 use rand::SeedableRng;
 use rand_pcg::Pcg32;
 use serde::Deserialize;
 
 use crate::combat::DamageInfo;
-use crate::map::{gen::Hallways, Level, MapInfo};
+use crate::map::{Level, MapInfo};
 use crate::monster::MonsterInfo;
 use crate::player::Player;
 use crate::point::Point;
@@ -17,7 +16,7 @@ use crate::tile::Tile;
 pub struct Game {
     pub settings: GameSettings,
     pub map_info: MapInfo,
-    pub monster_info: HashMap<String, MonsterInfo>,
+    pub monster_info: HashMap<String, Rc<MonsterInfo>>,
     pub damage_info: HashMap<String, DamageInfo>,
     pub menu: Rc<dyn Screen>,
     pub help: Rc<dyn Screen>,
@@ -30,7 +29,7 @@ impl Game {
     pub fn new(
         settings: GameSettings,
         map_info: MapInfo,
-        monster_info: HashMap<String, MonsterInfo>,
+        monster_info: HashMap<String, Rc<MonsterInfo>>,
         damage_info: HashMap<String, DamageInfo>,
         menu: Rc<dyn Screen>,
         help: Rc<dyn Screen>,
@@ -39,9 +38,7 @@ impl Game {
         #[cfg(target_arch = "wasm32")]
         pub use stdweb::console;
 
-        console!(log, &damage_info["cringe"].name);
-
-        let mut game = Game {
+        Game {
             player: Player {
                 tile: settings.player.tile,
                 pos: Point(1, 1),
@@ -58,25 +55,7 @@ impl Game {
                 basement: Vec::new(),
             },
             map_rng: SeedableRng::seed_from_u64(seed),
-        };
-        let floor = Level::generate(
-            game.settings.map.width,
-            game.settings.map.height,
-            &mut game,
-            Hallways::new(7, 6),
-        );
-        let px = Uniform::from(0..floor.width);
-        let py = Uniform::from(0..floor.height);
-        for _ in 0..game.settings.map.place_attempts {
-            let x = px.sample(&mut game.map_rng);
-            let y = py.sample(&mut game.map_rng);
-            if floor.get(x, y).walkable {
-                game.player.pos = Point(x as i32, y as i32);
-                break;
-            }
         }
-        game.levels.floors.push(floor);
-        game
     }
 }
 
@@ -86,6 +65,9 @@ pub struct Levels {
     basement: Vec<Level>,
 }
 impl Levels {
+    pub fn add_top(&mut self, level: Level) {
+        self.floors.push(level);
+    }
     pub fn cur(&self) -> &Level {
         if self.level < 0 {
             &self.basement[(-self.level + 1) as usize]
@@ -129,7 +111,7 @@ pub struct PlayerSettings {
 #[derive(Debug, Deserialize, Clone)]
 pub struct MapSettings {
     pub place_attempts: i32,
-    // pub num_monsters: u32,
+    pub num_monsters: u32,
     pub width: usize,
     pub height: usize,
 }

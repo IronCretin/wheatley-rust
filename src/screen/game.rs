@@ -1,22 +1,55 @@
 use std::borrow::Borrow;
+use std::cell::Cell;
 use std::convert::TryInto;
 
 use doryen_rs::Console;
+use rand::distributions::{Distribution, Uniform};
 
 use super::{handle_default, Action, Key, Screen};
 use crate::colors::*;
 use crate::game::Game;
+use crate::map::{gen::Hallways, Level};
 use crate::point::Point;
 
-pub struct GameScreen;
+pub struct GameScreen {
+    entered: Cell<bool>,
+}
 
 impl GameScreen {
     pub fn new() -> GameScreen {
-        GameScreen {}
+        GameScreen {
+            entered: Cell::new(false),
+        }
     }
 }
 
 impl Screen for GameScreen {
+    fn enter(&self, game: &mut Game) {
+        if !self.entered.get() {
+            let floor = Level::generate(
+                game.settings.map.width,
+                game.settings.map.height,
+                game,
+                Hallways::new(7, 6),
+            );
+            let px = Uniform::from(0..floor.width);
+            let py = Uniform::from(0..floor.height);
+            for _ in 0..game.settings.map.place_attempts {
+                let x = px.sample(&mut game.map_rng);
+                let y = py.sample(&mut game.map_rng);
+                if floor.get(x, y).walkable {
+                    game.player.pos = Point(x as i32, y as i32);
+                    break;
+                }
+            }
+            game.levels.add_top(floor);
+            let pos = game.player.pos;
+            game.levels
+                .cur_mut()
+                .compute_fov(pos.0, pos.1, game.settings.player.fov);
+            self.entered.set(false);
+        }
+    }
     fn render(&self, game: &mut Game, con: &mut Console) {
         let pos = game.player.pos;
         let level = game.levels.cur_mut();
@@ -41,6 +74,13 @@ impl Screen for GameScreen {
                     }
                 }
             }
+        }
+        for mon in &level.monsters {
+            if level.is_in_fov(mon.pos.0 as usize, mon.pos.1 as usize){
+            let p = mon.pos - offset;
+            if 0 <= p.0 && p.0 < level.width as i32 && 0 <= p.1 && p.1 < level.height as i32 {
+                mon.draw(p, con);
+            }}
         }
         game.player.draw(game.player.pos - offset, con);
     }
@@ -87,11 +127,6 @@ impl Screen for GameScreen {
             Point(0, 0)
         };
         player_move(game, dpos);
-    }
-    fn enter(&self, game: &mut Game) {
-        let pos = game.player.pos;
-        let fov = game.settings.player.fov;
-        game.levels.cur_mut().compute_fov(pos.0, pos.1, fov);
     }
 }
 

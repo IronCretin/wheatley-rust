@@ -1,9 +1,12 @@
+use rand::distributions::WeightedIndex;
 use rand::seq::SliceRandom;
 use rand::Rng;
 use rand_distr::{Distribution, Triangular, Uniform};
 
 use super::Generator;
 use crate::map::Level;
+use crate::monster::Monster;
+use crate::point::Point;
 use crate::Game;
 
 pub struct Hallways {
@@ -29,6 +32,29 @@ impl Generator for Hallways {
             level.height as usize - 1,
             game,
         );
+        let px = Uniform::from(0..level.width);
+        let py = Uniform::from(0..level.height);
+        let mon_names: Vec<&String> = game.monster_info.keys().collect();
+        let dist =
+            WeightedIndex::new(mon_names.iter().map(|n| game.monster_info[*n].weight)).unwrap();
+        for _ in 0..game.settings.map.num_monsters {
+            for _ in 0..game.settings.map.place_attempts {
+                let x = px.sample(&mut game.map_rng);
+                let y = py.sample(&mut game.map_rng);
+                if level.get(x, y).walkable {
+                    let name = mon_names[dist.sample(&mut game.map_rng)];
+                    println!("placing {} at {},{}", name, x, y);
+                    let info = game.monster_info[name].clone();
+                    level.monsters.push(Monster {
+                        pos: Point(x as i32, y as i32),
+                        hp: info.health,
+                        info,
+                    });
+                    // game.player.pos = Point(x as i32, y as i32);
+                    break;
+                }
+            }
+        }
     }
 }
 
@@ -49,7 +75,7 @@ fn create(
     // let uminr = minsize as usize;
 
     let hw = depth / 2 + 1;
-    if x0 + 1 > x1 - hw || y0 + 1 > y1 - hw {
+    if (x1 > hw && x0 + 1 > x1 - hw) || (y1 > hw && y0 + 1 > y1 - hw) {
         return;
     }
     if depth > 0 {

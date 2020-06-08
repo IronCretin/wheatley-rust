@@ -1,19 +1,28 @@
 use std::rc::Rc;
+use std::ops::Deref;
 
 use serde_derive::Deserialize;
 
 use crate::combat::AttackFlavor;
+use crate::point::Point;
 use crate::tile::Tile;
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct MonsterInfo {
-    name: String,
+    pub name: String,
+    pub weight: f64,
     #[serde(flatten)]
-    tile: Tile,
-    health: u32,
-    attacks: Vec<Attack>,
+    pub tile: Tile,
+    pub health: u32,
+    pub attacks: Vec<Attack>,
     #[serde(default)]
-    friendly: bool,
+    pub friendly: bool,
+}
+impl Deref for MonsterInfo {
+    type Target = Tile;
+    fn deref(&self) -> &Tile {
+        &self.tile
+    }
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -23,7 +32,15 @@ pub struct Attack {
     pub text: Option<Rc<AttackFlavor>>,
 }
 
+#[derive(Debug)]
 pub struct Monster {
     pub info: Rc<MonsterInfo>,
-    pub health: u32,
+    pub pos: Point,
+    pub hp: u32,
 }
+impl Deref for Monster {
+    type Target = MonsterInfo;
+    fn deref(&self) -> &MonsterInfo {
+        &self.info
+    }
+} 
