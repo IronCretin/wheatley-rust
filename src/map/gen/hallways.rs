@@ -41,7 +41,7 @@ impl Generator for Hallways {
             for _ in 0..game.info.settings.map.place_attempts {
                 let x = px.sample(&mut game.map_rng);
                 let y = py.sample(&mut game.map_rng);
-                if level.get(x, y).walkable {
+                if level.tiles[[x, y]].walkable {
                     let name = mon_names[dist.sample(&mut game.map_rng)];
                     let info = game.info.monster[name].clone();
                     level.monsters.push(Monster {
@@ -87,16 +87,16 @@ fn create(
             let (doors1, doors2): (bool, bool) = rng.gen();
 
             for i in 0..hw {
-                level.set(
+                level.tiles[[
                     x + i,
-                    y0 - 1,
-                    if doors1 { door.clone() } else { floor.clone() },
-                );
-                level.set(x + i, y1, if doors2 { door.clone() } else { floor.clone() });
+                    y0 - 1]] = 
+                    if doors1 { door.clone() } else { floor.clone() }
+                ;
+                level.tiles[[x + i, y1]] = if doors2 { door.clone() } else { floor.clone() };
             }
             for y in y0..y1 {
                 for j in 0..hw {
-                    level.set(x + j, y, floor.clone());
+                    level.tiles[[x + j, y]] = floor.clone();
                 }
             }
             create(level, depth - 1, minr, !xaxis, x0, x - 1, y0, y1, game);
@@ -110,16 +110,16 @@ fn create(
             let (doors1, doors2): (bool, bool) = rng.gen();
 
             for i in 0..hw {
-                level.set(
+                level.tiles[[
                     x0 - 1,
-                    y + i,
-                    if doors1 { door.clone() } else { floor.clone() },
-                );
-                level.set(x1, y + i, if doors2 { door.clone() } else { floor.clone() });
+                    y + i]] =
+                    if doors1 { door.clone() } else { floor.clone() }
+                ;
+                level.tiles[[x1, y + i]] = if doors2 { door.clone() } else { floor.clone() };
             }
             for x in x0..x1 {
                 for j in 0..hw {
-                    level.set(x, y + j, floor.clone());
+                    level.tiles[[x, y + j]] = floor.clone();
                 }
             }
             create(level, depth - 1, minr, !xaxis, x0, x1, y0, y - 1, game);
@@ -256,11 +256,11 @@ fn create_room(
     let floor = &game.info.map.tiles["floor"];
 
     let mut place = |x: i32, y: i32, t| {
-        level.set(
+        level.tiles[[
             (x0 as i32 + x * dx.0 + y * dy.0) as usize,
-            (y0 as i32 + x * dx.1 + y * dy.1) as usize,
-            t,
-        );
+            (y0 as i32 + x * dx.1 + y * dy.1) as usize]] =
+            t
+        ;
     };
     let w = if xmin > xmax / 2 {
         xmax

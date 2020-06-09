@@ -1,53 +1,80 @@
-use std::collections::HashMap;
-use std::rc::Rc;
+use std::collections::{HashMap, VecDeque};
 use std::ops::{Index, IndexMut};
+use std::rc::Rc;
 
 use rand::SeedableRng;
+use rand::distributions::{Uniform, Distribution};
 use rand_pcg::Pcg32;
 use serde::Deserialize;
 
 use crate::combat::DamageInfo;
-use crate::map::{Level, MapInfo};
-use crate::monster::MonsterInfo;
-use crate::player::Player;
+use crate::map::{Level, MapInfo, gen::Hallways};
+use crate::monster::{Monster, MonsterInfo, Attack};
 use crate::point::Point;
 use crate::screen::Screen;
 use crate::tile::Tile;
+use crate::util::insert_at_zero;
 
 pub struct Game {
     pub info: GameInfo,
     pub menu: Rc<dyn Screen>,
     pub help: Rc<dyn Screen>,
-    pub player: Player,
+    pub messages: VecDeque<String>,
     pub levels: Levels,
     pub map_rng: Pcg32,
 }
 
 impl Game {
-    pub fn new(
-        info: GameInfo,
-        menu: Rc<dyn Screen>,
-        help: Rc<dyn Screen>,
-        seed: u64,
-    ) -> Game {
-        #[cfg(target_arch = "wasm32")]
-        pub use stdweb::console;
-
-        Game {
-            player: Player {
-                tile: info.settings.player.tile,
-                pos: Point(1, 1),
-            },
+    pub fn new(info: GameInfo, menu: Rc<dyn Screen>, help: Rc<dyn Screen>, seed: u64) -> Game {
+        let mut game = Game {
             info,
             menu,
             help,
+            messages: VecDeque::new(),
             levels: Levels {
                 level: 0,
                 floors: Vec::new(),
                 basement: Vec::new(),
             },
             map_rng: SeedableRng::seed_from_u64(seed),
+        };
+        let mut level = Level::generate(
+            game.info.settings.map.width,
+            game.info.settings.map.height,
+            &mut game,
+            Hallways::new(7, 6),
+        );
+        let px = Uniform::from(0..level.width);
+        let py = Uniform::from(0..level.height);
+        for _ in 0..game.info.settings.map.place_attempts {
+            let x = px.sample(&mut game.map_rng);
+            let y = py.sample(&mut game.map_rng);
+            if level.tiles[[x, y]].walkable {
+                insert_at_zero(&mut level.monsters, Monster {
+                    info: Rc::new(MonsterInfo {
+                        weight: 0.0,
+                        name: "player".to_owned(),
+                        tile: game.info.settings.player.tile,
+                        attacks: vec![Attack {
+                            dam: "1d6".to_owned(),
+                            class: "cringe".to_owned(),
+                            text: None,
+                        }],
+                        health: 20,
+                        friendly: true
+                    }),
+                    hp: 20,
+                    pos: Point(x as i32, y as i32),
+                });
+                break;
+            }
         }
+        let pos = level.monsters[0].pos;
+        game.levels.add_top(level);
+        game.levels
+            .cur_mut()
+            .compute_fov(pos.0, pos.1, game.info.settings.player.fov);
+        game
     }
 }
 

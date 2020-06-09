@@ -25,10 +25,11 @@ pub mod game;
 pub mod loader;
 pub mod map;
 pub mod monster;
-pub mod player;
+// pub mod player;
 pub mod point;
 pub mod screen;
 pub mod tile;
+pub mod util;
 
 use game::{Game, GameInfo, GameSettings};
 use loader::load;

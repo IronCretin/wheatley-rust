@@ -11,6 +11,7 @@ pub mod gen;
 use crate::monster::Monster;
 use crate::tile::Tile;
 use crate::Game;
+use crate::util::Grid;
 use gen::Generator;
 
 #[derive(Debug, Deserialize)]
@@ -22,8 +23,9 @@ pub struct Level {
     pub width: usize,
     pub height: usize,
     fov_data: MapData,
-    tiles: Vec<Rc<MapTile>>,
-    pub seen: Seen,
+    pub tiles: Grid<Rc<MapTile>>,
+    pub seen: Grid<Option<u16>>,
+    // player is always at position 0 in active level
     pub monsters: Vec<Monster>,
 }
 
@@ -44,21 +46,21 @@ impl Level {
             width,
             height,
             fov_data,
-            tiles: vec![tile.clone(); width * height],
-            seen: Seen {width, seen: vec![None; width * height]},
+            tiles: Grid::new(tile.clone(), width, height),
+            seen: Grid::new(None, width, height),
             monsters: Vec::new(),
         }
     }
-    pub fn get(&self, x: usize, y: usize) -> &MapTile {
-        return &self.tiles[x * self.width + y];
-    }
-    pub fn get_rc(&self, x: usize, y: usize) -> Rc<MapTile> {
-        return self.tiles[x * self.width + y].clone();
-    }
-    pub fn set(&mut self, x: usize, y: usize, t: Rc<MapTile>) {
-        self.fov_data.set_transparent(x, y, t.transparent);
-        self.tiles[x * self.width + y] = t;
-    }
+    // pub fn get(&self, x: usize, y: usize) -> &MapTile {
+    //     return &self.tiles[x * self.width + y];
+    // }
+    // pub fn get_rc(&self, x: usize, y: usize) -> Rc<MapTile> {
+    //     return self.tiles[x * self.width + y].clone();
+    // }
+    // pub fn set(&mut self, x: usize, y: usize, t: Rc<MapTile>) {
+    //     self.fov_data.set_transparent(x, y, t.transparent);
+    //     self.tiles[x * self.width + y] = t;
+    // }
     pub fn compute_fov(&mut self, x: i32, y: i32, radius: i32) {
         self.fov_data.clear_fov();
         FovRestrictive::default().compute_fov(
@@ -71,20 +73,6 @@ impl Level {
     }
     pub fn is_in_fov(&self, x: usize, y: usize) -> bool {
         self.fov_data.is_in_fov(x, y)
-    }
-
-}
-
-pub struct Seen {
-    width: usize,
-    seen: Vec<Option<u16>>
-}
-impl Seen {
-    pub fn is_seen(&self, x: usize, y: usize) -> Option<u16> {
-        self.seen[x * self.width + y]
-    }
-    pub fn set_seen(&mut self, x: usize, y: usize, seen: u16) {
-        self.seen[x * self.width + y] = Some(seen);
     }
 }
 
