@@ -1,0 +1,10 @@
+[zoomer]
+weight = 1
+name = "zoomer"
+ch = 'Z'
+fg = [255, 0, 0, 255]
+# doesnt do anything for now
+speed = 200
+health = 10
+attacks = [{ dam = '1d6', class = 'cringe' }]
+fov = 10
