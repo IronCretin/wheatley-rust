@@ -2,9 +2,9 @@ use std::collections::{HashMap, VecDeque};
 use std::ops::{Index, IndexMut};
 use std::rc::Rc;
 
+use doryen_extra::random::{Dice, MersenneTwister, Random};
 use rand::distributions::{Distribution, Uniform};
 use rand::SeedableRng;
-use rand_pcg::Pcg32;
 use serde::Deserialize;
 
 use crate::combat::DamageInfo;
@@ -21,7 +21,8 @@ pub struct Game {
     pub help: Rc<dyn Screen>,
     pub messages: VecDeque<String>,
     pub levels: Levels,
-    pub map_rng: Pcg32,
+    pub map_rng: Random<MersenneTwister>,
+    pub play_rng: Random<MersenneTwister>,
 }
 
 impl Game {
@@ -37,6 +38,7 @@ impl Game {
                 basement: Vec::new(),
             },
             map_rng: SeedableRng::seed_from_u64(seed),
+            play_rng: SeedableRng::seed_from_u64(seed),
         };
         let mut level = Level::generate(
             game.info.settings.map.width,
@@ -58,7 +60,7 @@ impl Game {
                             name: "player".to_owned(),
                             tile: game.info.settings.player.tile,
                             attacks: vec![Attack {
-                                dam: "1d6".to_owned(),
+                                dam: Dice::new("1d6"),
                                 class: "cringe".to_owned(),
                                 text: None,
                             }],

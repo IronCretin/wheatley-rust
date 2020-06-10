@@ -50,9 +50,10 @@ impl Screen for GameScreen {
             }
         }
         for mon in &level.monsters {
-            if level
-                .tiles
-                .is_in_fov(mon.pos.0 as usize, mon.pos.1 as usize)
+            if mon.hp > 0
+                && level
+                    .tiles
+                    .is_in_fov(mon.pos.0 as usize, mon.pos.1 as usize)
             {
                 let p = mon.pos - offset;
                 mon.draw(p, con);
@@ -113,7 +114,18 @@ impl Screen for GameScreen {
             Point(0, 0)
         };
         let level = game.levels.cur_mut();
-        let tick = move_to(0, dpos, level, &game.info);
+        let tick = if dpos != Point(0, 0) {
+            move_to(
+                0,
+                dpos,
+                level,
+                &game.info,
+                &mut game.messages,
+                &mut game.play_rng,
+            )
+        } else {
+            false
+        };
         if tick {
             let player = &level.monsters[0];
             let fov = game.info.settings.player.fov;

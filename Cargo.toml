@@ -8,11 +8,11 @@ edition = "2018"
 
 [dependencies]
 rand = "0.7.3"
-rand_pcg = "0.2.1"
 rand_distr = "0.2.2"
 doryen-rs = "1.2.3"
 doryen-fov = "0.1.1"
-# doryen-extra = "0.1.0"
+# patched version that makes random structs public
+doryen-extra = { git = "https://github.com/IronCretin/doryen-extra", features = ["rng_support"] }
 toml = "0.5.6"
 serde = { version = "1.0.111", features = ["derive", "rc"] }
 serde_derive = "1.0.111"

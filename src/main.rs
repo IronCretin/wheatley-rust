@@ -56,6 +56,7 @@ fn main() {
             console!(error, s)
         }));
     }
+    println!("{}", std::mem::size_of::<Game>());
 
     load(
         &["settings.toml", "map.toml", "monsters.toml", "damage.toml"],

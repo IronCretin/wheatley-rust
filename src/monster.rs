@@ -1,9 +1,14 @@
 use std::borrow::Borrow;
+use std::collections::VecDeque;
 use std::convert::TryInto;
+use std::fmt;
 use std::ops::Deref;
 use std::rc::Rc;
 
-// use rand::Rng;
+use doryen_extra::random::{Dice, Rng};
+use rand::seq::SliceRandom;
+use rand::RngCore;
+use serde::de::{Deserializer, Error, Visitor};
 use serde_derive::Deserialize;
 
 use crate::combat::AttackFlavor;
@@ -18,7 +23,7 @@ pub struct MonsterInfo {
     pub weight: f64,
     #[serde(flatten)]
     pub tile: Tile,
-    pub health: u32,
+    pub health: i32,
     pub attacks: Vec<Attack>,
     #[serde(default)]
     pub friendly: bool,
@@ -32,16 +37,30 @@ impl Deref for MonsterInfo {
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct Attack {
-    pub dam: String,
+    #[serde(deserialize_with = "de_die")]
+    pub dam: Dice,
     pub class: String,
-    pub text: Option<Rc<AttackFlavor>>,
+    pub text: Option<Vec<AttackFlavor>>,
+}
+fn de_die<'de, D: Deserializer<'de>>(de: D) -> Result<Dice, D::Error> {
+    struct DVis;
+    impl<'de> Visitor<'de> for DVis {
+        type Value = Dice;
+        fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+            write!(formatter, "a die")
+        }
+        fn visit_str<E: Error>(self, v: &str) -> Result<Dice, E> {
+            Ok(Dice::new(v))
+        }
+    }
+    de.deserialize_string(DVis)
 }
 
 #[derive(Debug)]
 pub struct Monster {
     pub info: Rc<MonsterInfo>,
     pub pos: Point,
-    pub hp: u32,
+    pub hp: i32,
 }
 
 impl Deref for Monster {
@@ -68,19 +87,83 @@ impl Creature for Monster {
 }
 
 // find a way to express this type signature, its awkward to pass the parts separately
-pub fn move_to(idx: usize, dpos: Point, level: &mut Level, info: &GameInfo) -> bool {
-    let creature = &mut level.monsters[idx];
-    let pos = creature.get_pos() + dpos;
-    let (ux, uy) = pos.try_into().unwrap();
-    if ux < level.width && uy < level.height {
-        let tile = level.tiles.get(ux, uy);
-        if tile.walkable {
-            creature.set_pos(pos);
-            true
-        } else if let Some(oname) = &tile.open {
-            let otile = info.map.tiles[Borrow::<String>::borrow(oname)].clone();
-            level.tiles.set(ux, uy, otile);
-            true
+pub fn move_to<R>(
+    idx: usize,
+    dpos: Point,
+    level: &mut Level,
+    info: &GameInfo,
+    log: &mut VecDeque<String>,
+    rng: &mut R,
+) -> bool
+where
+    R: Rng + RngCore,
+{
+    let pos = level.monsters[idx].get_pos() + dpos;
+    if let Ok((ux, uy)) = pos.try_into() {
+        if ux < level.width && uy < level.height {
+            let tile = level.tiles.get(ux, uy);
+            if tile.walkable {
+                let minfo = level.monsters[idx].info.clone();
+                for (i, mon) in level.monsters.iter_mut().enumerate() {
+                    if i != idx && mon.pos == pos && mon.hp > 0 {
+                        let attack = minfo.attacks.choose(rng).unwrap();
+                        let damage = attack.dam.roll(rng);
+                        let flavor = attack
+                            .text
+                            .as_ref()
+                            .unwrap_or_else(|| &info.damage[&attack.class].attacks);
+                        if idx == 0 {
+                            let (pre, post) = &flavor.choose(rng).unwrap().player;
+                            log.push_back("you".to_owned() + pre + "the " + &mon.info.name + post);
+                        } else if i == 0 {
+                            let (pre, post) = &flavor.choose(rng).unwrap().monster_p;
+                            log.push_back("the ".to_owned() + &minfo.name + pre + "you" + post);
+                        } else {
+                            let (pre, post) = &flavor.choose(rng).unwrap().monster_p;
+                            log.push_back(
+                                "the ".to_owned()
+                                    + &minfo.name
+                                    + pre
+                                    + "the "
+                                    + &mon.info.name
+                                    + post,
+                            );
+                        }
+                        mon.hp -= damage;
+                        if mon.hp <= 0 {
+                            if i == 0 {
+                                log.push_back(
+                                    info.damage[&attack.class]
+                                        .deaths
+                                        .choose(rng)
+                                        .unwrap()
+                                        .player
+                                        .clone(),
+                                );
+                            } else {
+                                log.push_back(
+                                    "the".to_owned()
+                                        + &mon.info.name
+                                        + &info.damage[&attack.class]
+                                            .deaths
+                                            .choose(rng)
+                                            .unwrap()
+                                            .monster,
+                                );
+                            }
+                        }
+                        return true;
+                    }
+                }
+                level.monsters[idx].set_pos(pos);
+                true
+            } else if let Some(oname) = &tile.open {
+                let otile = info.map.tiles[Borrow::<String>::borrow(oname)].clone();
+                level.tiles.set(ux, uy, otile);
+                true
+            } else {
+                false
+            }
         } else {
             false
         }
