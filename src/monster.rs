@@ -68,23 +68,18 @@ impl Creature for Monster {
 }
 
 // find a way to express this type signature, its awkward to pass the parts separately
-pub fn move_to(
-    idx: usize,
-    dpos: Point,
-    level: &mut Level,
-    info: &GameInfo,
-) -> bool {
+pub fn move_to(idx: usize, dpos: Point, level: &mut Level, info: &GameInfo) -> bool {
     let creature = &mut level.monsters[idx];
     let pos = creature.get_pos() + dpos;
     let (ux, uy) = pos.try_into().unwrap();
     if ux < level.width && uy < level.height {
-        let tile = &level.tiles[[ux, uy]];
+        let tile = level.tiles.get(ux, uy);
         if tile.walkable {
             creature.set_pos(pos);
             true
         } else if let Some(oname) = &tile.open {
             let otile = info.map.tiles[Borrow::<String>::borrow(oname)].clone();
-            level.tiles[[ux, uy]] = otile;
+            level.tiles.set(ux, uy, otile);
             true
         } else {
             false

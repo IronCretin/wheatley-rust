@@ -10,8 +10,8 @@ pub mod gen;
 
 use crate::monster::Monster;
 use crate::tile::Tile;
-use crate::Game;
 use crate::util::Grid;
+use crate::Game;
 use gen::Generator;
 
 #[derive(Debug, Deserialize)]
@@ -22,8 +22,7 @@ pub struct MapInfo {
 pub struct Level {
     pub width: usize,
     pub height: usize,
-    fov_data: MapData,
-    pub tiles: Grid<Rc<MapTile>>,
+    pub tiles: Tiles,
     pub seen: Grid<Option<u16>>,
     // player is always at position 0 in active level
     pub monsters: Vec<Monster>,
@@ -45,23 +44,33 @@ impl Level {
         Level {
             width,
             height,
-            fov_data,
-            tiles: Grid::new(tile.clone(), width, height),
+            tiles: Tiles {
+                fov_data,
+                tiles: Grid::new(tile.clone(), width, height),
+            },
             seen: Grid::new(None, width, height),
             monsters: Vec::new(),
         }
     }
-    // pub fn get(&self, x: usize, y: usize) -> &MapTile {
-    //     return &self.tiles[x * self.width + y];
-    // }
-    // pub fn get_rc(&self, x: usize, y: usize) -> Rc<MapTile> {
-    //     return self.tiles[x * self.width + y].clone();
-    // }
-    // pub fn set(&mut self, x: usize, y: usize, t: Rc<MapTile>) {
-    //     self.fov_data.set_transparent(x, y, t.transparent);
-    //     self.tiles[x * self.width + y] = t;
-    // }
-    pub fn compute_fov(&mut self, x: i32, y: i32, radius: i32) {
+}
+
+pub struct Tiles {
+    fov_data: MapData,
+    tiles: Grid<Rc<MapTile>>,
+}
+impl Tiles {
+    pub fn get(&self, x: usize, y: usize) -> &MapTile {
+        &self.tiles[[x, y]]
+    }
+    pub fn get_rc(&self, x: usize, y: usize) -> Rc<MapTile> {
+        self.tiles[[x, y]].clone()
+    }
+    pub fn set(&mut self, x: usize, y: usize, tile: Rc<MapTile>) {
+        // separate method needed so it can set transparency -- eventually do without doryen_fov eventually
+        self.fov_data.set_transparent(x, y, tile.transparent);
+        self.tiles[[x, y]] = tile
+    }
+    pub fn compute_fov(&mut self, x: usize, y: usize, radius: usize) {
         self.fov_data.clear_fov();
         FovRestrictive::default().compute_fov(
             &mut self.fov_data,

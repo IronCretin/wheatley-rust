@@ -17,7 +17,7 @@ impl Generator for Empty {
         let floor = &game.info.map.tiles["floor"];
         for x in 1..level.width - 1 {
             for y in 0..level.height - 1 {
-                level.tiles[[x, y]] = floor.clone();
+                level.tiles.set(x, y, floor.clone());
             }
         }
     }
@@ -31,7 +31,7 @@ impl Generator for Percent {
         for x in 0..level.width {
             for y in 0..level.height {
                 if game.map_rng.gen_bool(1.0 - self.0) {
-                    level.tiles[[x, y]] = floor.clone();
+                    level.tiles.set(x, y, floor.clone());
                 }
             }
         }

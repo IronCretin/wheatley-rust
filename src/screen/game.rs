@@ -38,8 +38,8 @@ impl Screen for GameScreen {
                 let p = Point(x, y) + offset;
                 if 0 <= p.0 && p.0 < level.width as i32 && 0 <= p.1 && p.1 < level.height as i32 {
                     let (ux, uy) = p.try_into().unwrap();
-                    if level.is_in_fov(ux, uy) {
-                        let t = &level.tiles[[ux, uy]];
+                    if level.tiles.is_in_fov(ux, uy) {
+                        let t = &level.tiles.get(ux, uy);
                         t.draw(Point(x, y), con);
                         let ch = t.ch;
                         level.seen[[ux, uy]] = Some(ch);
@@ -50,12 +50,13 @@ impl Screen for GameScreen {
             }
         }
         for mon in &level.monsters {
-            if level.is_in_fov(mon.pos.0 as usize, mon.pos.1 as usize) {
+            if level
+                .tiles
+                .is_in_fov(mon.pos.0 as usize, mon.pos.1 as usize)
+            {
                 let p = mon.pos - offset;
                 mon.draw(p, con);
-                level
-                    .seen
-                    [[mon.pos.0 as usize, mon.pos.1 as usize]] = Some(mon.ch);
+                level.seen[[mon.pos.0 as usize, mon.pos.1 as usize]] = Some(mon.ch);
             }
         }
         for (i, msg) in game.messages.iter().rev().take(5).enumerate() {
@@ -78,10 +79,10 @@ impl Screen for GameScreen {
                     for y in -1..=1 {
                         if x != 0 || y != 0 {
                             let (ux, uy) = (pos + Point(x, y)).try_into().unwrap();
-                            if let Some(cname) = &l.tiles[[ux, uy]].close {
+                            if let Some(cname) = &l.tiles.get(ux, uy).close {
                                 let ctile =
                                     game.info.map.tiles[Borrow::<String>::borrow(cname)].clone();
-                                l.tiles[[ux, uy]] = ctile;
+                                l.tiles.set(ux, uy, ctile);
                             }
                         }
                     }
@@ -117,7 +118,10 @@ impl Screen for GameScreen {
             let player = &level.monsters[0];
             let fov = game.info.settings.player.fov;
             let pos = player.pos;
-            game.levels.cur_mut().compute_fov(pos.0, pos.1, fov);
+            game.levels
+                .cur_mut()
+                .tiles
+                .compute_fov(pos.0 as usize, pos.1 as usize, fov);
         }
     }
 }

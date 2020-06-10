@@ -2,14 +2,14 @@ use std::collections::{HashMap, VecDeque};
 use std::ops::{Index, IndexMut};
 use std::rc::Rc;
 
+use rand::distributions::{Distribution, Uniform};
 use rand::SeedableRng;
-use rand::distributions::{Uniform, Distribution};
 use rand_pcg::Pcg32;
 use serde::Deserialize;
 
 use crate::combat::DamageInfo;
-use crate::map::{Level, MapInfo, gen::Hallways};
-use crate::monster::{Monster, MonsterInfo, Attack};
+use crate::map::{gen::Hallways, Level, MapInfo};
+use crate::monster::{Attack, Monster, MonsterInfo};
 use crate::point::Point;
 use crate::screen::Screen;
 use crate::tile::Tile;
@@ -49,31 +49,36 @@ impl Game {
         for _ in 0..game.info.settings.map.place_attempts {
             let x = px.sample(&mut game.map_rng);
             let y = py.sample(&mut game.map_rng);
-            if level.tiles[[x, y]].walkable {
-                insert_at_zero(&mut level.monsters, Monster {
-                    info: Rc::new(MonsterInfo {
-                        weight: 0.0,
-                        name: "player".to_owned(),
-                        tile: game.info.settings.player.tile,
-                        attacks: vec![Attack {
-                            dam: "1d6".to_owned(),
-                            class: "cringe".to_owned(),
-                            text: None,
-                        }],
-                        health: 20,
-                        friendly: true
-                    }),
-                    hp: 20,
-                    pos: Point(x as i32, y as i32),
-                });
+            if level.tiles.get(x, y).walkable {
+                insert_at_zero(
+                    &mut level.monsters,
+                    Monster {
+                        info: Rc::new(MonsterInfo {
+                            weight: 0.0,
+                            name: "player".to_owned(),
+                            tile: game.info.settings.player.tile,
+                            attacks: vec![Attack {
+                                dam: "1d6".to_owned(),
+                                class: "cringe".to_owned(),
+                                text: None,
+                            }],
+                            health: 20,
+                            friendly: true,
+                        }),
+                        hp: 20,
+                        pos: Point(x as i32, y as i32),
+                    },
+                );
                 break;
             }
         }
         let pos = level.monsters[0].pos;
         game.levels.add_top(level);
-        game.levels
-            .cur_mut()
-            .compute_fov(pos.0, pos.1, game.info.settings.player.fov);
+        game.levels.cur_mut().tiles.compute_fov(
+            pos.0 as usize,
+            pos.1 as usize,
+            game.info.settings.player.fov,
+        );
         game
     }
 }
@@ -153,7 +158,7 @@ pub struct FontSettings {
 }
 #[derive(Debug, Deserialize, Clone)]
 pub struct PlayerSettings {
-    pub fov: i32,
+    pub fov: usize,
     pub tile: Tile,
 }
 #[derive(Debug, Deserialize, Clone)]

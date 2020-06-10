@@ -14,7 +14,7 @@ impl<T: Clone> Grid<T> {
     pub fn new(val: T, width: usize, height: usize) -> Grid<T> {
         Grid {
             width,
-            elems: vec![val; width*height],
+            elems: vec![val; width * height],
         }
     }
 }
